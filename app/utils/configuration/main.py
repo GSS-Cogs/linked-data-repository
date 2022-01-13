@@ -52,11 +52,11 @@ def get_config(logger, path: Union[str, Path] = DEFAULT_PATH):
     # ------------------------
     # Dynamically add env vars
 
-    session_encryption_key = os.getenv('SESSION_ENCRYPTION_KEY', None)
-    if not session_encryption_key:
-        logger.warning('No SESSION_ENCYPTION_KEY in env, generating for dev purposes')
-        session_encryption_key = base64.urlsafe_b64encode(os.urandom(32))
-    config["ENV"]["session_encryption_key"] = session_encryption_key
+    encryption_key = os.getenv('ENCRYPTION_KEY', None)
+    if not encryption_key:
+        logger.warning('No ENCRYPTION_KEY in env, generating for dev purposes')
+        encryption_key = base64.urlsafe_b64encode(os.urandom(32))
+    config["ENV"]["encryption_key"] = encryption_key
 
     # Required auth environment variables
     msg = 'Aborting, the environment variable "{}" must be set'

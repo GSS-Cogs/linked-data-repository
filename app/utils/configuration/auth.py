@@ -17,7 +17,7 @@ class AuthConfig:
         self.roles_namespace = cfg.get('AUTH', 'roles_namespace')
 
         # Things that started as env vars
-        self.encryption_key = cfg.get('ENV', 'session_encryption_key')
+        self.encryption_key = cfg.get('ENV', 'encryption_key')
         self.client_id = cfg.get('ENV', 'oauth_client_id')
         self.client_secret = cfg.get('ENV', 'oauth_client_secret')
         self.redirect_uri = cfg.get('ENV', 'oauth_redirect_uri')
