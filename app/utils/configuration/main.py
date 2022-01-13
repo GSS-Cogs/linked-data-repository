@@ -55,7 +55,7 @@ def get_config(logger, path: Union[str, Path] = DEFAULT_PATH):
     encryption_key = os.getenv('ENCRYPTION_KEY', None)
     if not encryption_key:
         logger.warning('No ENCRYPTION_KEY in env, generating for dev purposes')
-        encryption_key = base64.urlsafe_b64encode(os.urandom(32))
+        encryption_key = str(base64.urlsafe_b64encode(os.urandom(32)))
     config["ENV"]["encryption_key"] = encryption_key
 
     # Required auth environment variables
