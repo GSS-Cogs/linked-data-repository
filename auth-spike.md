@@ -56,7 +56,7 @@ This server is using the standard `oidc` scope. So a typical "log in with google
 - auth provider (auth0) redirects users response to this servers `/callback` endpoint, providing `token` and `state` values as url parameters.
 - this server checks the `state` it was originally given matches the `state` parameter given to the callback url (avoid CSRF attacks, i.e confirm incoming request actually is from the auth provider).
 - the `token` is permission from the user to request a scoped (to "oidc") `access_token` on their behalf - so we do.
-- the `access_token` is encrypted to a `user` cookie set against this servers domain in the browser.
+- the `access_token` is encrypted to a `user` cookie set against this servers domain.
 - the `access_token` in the cookie is used to check (per request) if a given (now `authenticated`) user has the `role` required to get the resource in question - this is `authorization`.
 
 ### Rules
