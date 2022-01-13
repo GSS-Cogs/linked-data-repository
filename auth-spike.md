@@ -30,7 +30,7 @@ Set the environment variables:
 
 | name | description |
 | ---- | ----------- |
-| SESSION_ENCRYPTION_KEY | When running locally a default one will be generated. |
+| ENCRYPTION_KEY | When running locally a default one will be generated. |
 | OAUTH_DOMAIN | Get from auth0 account/someone else. |
 | OAUTH_CLIENT_ID | Get from auth0 account/someone else. |
 | OAUTH_CLIENT_SECRET | Get from auth0 account/someone else. |
