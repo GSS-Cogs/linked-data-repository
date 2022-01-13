@@ -18,7 +18,11 @@ _Authorises_ people based on if said google account has a `@gsscog.uk` email add
 - The `/login` endpoint will log you in with OIDC.
 - The `/logout` endpoint will log you out.
 
-Once logged in, your access token is stored in a asymetrically encrypted session token in your browser (http only, stored against this serves domain only). Until the session expires or you log out, said access token is used to check your roles (i.e - do you have "admin"?) when you hit the `/` endpoint.
+Caching is a pig, so if you want to try different gmail accounts, its easiest to just use an incognito window.
+
+Once logged in, your access token is stored in a asymetrically encrypted cookie in the browser (http only, only sent via https, stored against this serves domain only). Until it expires or you log out, said access token is used to check your roles (i.e - do you have "admin"?) when you hit the `/` endpoint.
+
+I have _not_ implement refresh logic or anything like that, it's just a spike.
 
 ## Setup
 
@@ -52,8 +56,8 @@ This server is using the standard `oidc` scope. So a typical "log in with google
 - auth provider (auth0) redirects users response to this servers `/callback` endpoint, providing `token` and `state` values as url parameters.
 - this server checks the `state` it was originally given matches the `state` parameter given to the callback url (avoid CSRF attacks, i.e confirm incoming request actually is from the auth provider).
 - the `token` is permission from the user to request a scoped (to "oidc") `access_token` on their behalf - so we do.
-- the `access_token` is encrypted to a http only session cookie set against this server domain in the browser (so other people cannot tamper with it).
-- the `access_token` in the session is used to check (per request) if a given (now `authenticated`) user has the `role` required to get the resource in question - this is `authorization`.
+- the `access_token` is encrypted to a `user` cookie set against this servers domain in the browser.
+- the `access_token` in the cookie is used to check (per request) if a given (now `authenticated`) user has the `role` required to get the resource in question - this is `authorization`.
 
 ### Rules
 

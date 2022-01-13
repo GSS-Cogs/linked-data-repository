@@ -1,1 +1,1 @@
-from .configuration import get_config, SessionConfig
+from .configuration import get_config, AuthConfig

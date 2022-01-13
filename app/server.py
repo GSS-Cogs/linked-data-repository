@@ -3,27 +3,27 @@ from sanic.request import Request
 from sanic.response import redirect, json
 from sanic.log import logger
 
-from utils import get_config, SessionConfig
-from session import Session
+from utils import get_config, AuthConfig
+from auth import Auth
 
 app = Sanic(name="backend")
 
 app.ctx.cfg = get_config(logger)
 
-sc = SessionConfig(app.ctx.cfg)
+ac = AuthConfig(app.ctx.cfg)
 
-def respond_update_session(request: Request, response, cookie: str):
+def respond_update_cookie(request: Request, response, cookie: str):
     """
-    Do the right things when writing a session cookie
+    Do the right things when writing a user cookie
     along with a response.
     """
-    response.cookies["session"] = cookie
-    response.cookies['session']['httponly'] = True
-    response.cookies['session']['secure'] = True
+    response.cookies["user"] = cookie
+    response.cookies['user']['httponly'] = True
+    response.cookies['user']['secure'] = True
     
     # Note - split as it needs to be "localhost" not "localhost:<port>"
     # TODO - use a library to make url, not nasty splits
-    response.cookies['session']['domain'] = f'{request.host.split(":")[0]}'
+    response.cookies['user']['domain'] = f'{request.host.split(":")[0]}'
 
     return response
 
@@ -33,8 +33,8 @@ async def home(request: Request):
     """
     Super simple endpoint, returns some json
     """
-    session = Session(sc, request, logger)
-    return json({"you're logged in as an admin": session.has_admin()}, status=200)
+    auth = Auth(ac, request, logger)
+    return json({"you're logged in as an admin": auth.has_admin()}, status=200)
 
 
 @app.route('/login')
@@ -44,12 +44,12 @@ async def login(request: Request):
     (google via auth0). If successful, auth0 will redirect back
     to /callback
     """
-    session = Session(sc, request, logger)
-    uri = session.get_auth_uri()
-    return respond_update_session(
+    auth = Auth(ac, request, logger)
+    uri = auth.get_auth_uri()
+    return respond_update_cookie(
         request,
         redirect(uri),
-        session.cookie
+        auth.cookie
     )
 
 
@@ -58,15 +58,15 @@ async def callback_handling(request: Request):
     """
     Receives redirected request from auth0 once a user
     has been authenticated. Then encrypts access
-    token into the session cookie and redirects
+    token into the user cookie and redirects
     us back to /.
     """
-    session = Session(sc, request, logger)
-    session.set_access_token()
-    return respond_update_session(
+    auth = Auth(ac, request, logger)
+    auth.set_access_token()
+    return respond_update_cookie(
         request,
         redirect('/'),
-        session.cookie
+        auth.cookie
     )
 
 
@@ -74,15 +74,14 @@ async def callback_handling(request: Request):
 async def logout(request: Request):
     """
     Logs the user out, both on auth0 and via removing the
-    users access token from their session cookie.
+    users access token from their user cookie.
     """
-    session = Session(sc, request, logger)
-    session.logout()
-    logger.debug(session.decode_session_cookie())
-    return respond_update_session(
+    auth = Auth(ac, request, logger)
+    auth.logout()
+    return respond_update_cookie(
         request,
         redirect('/'),
-        session.cookie
+        auth.cookie
     )
 
 

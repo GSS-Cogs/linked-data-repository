@@ -6,18 +6,15 @@ from authlib.integrations.requests_client import OAuth2Session
 import requests
 from sanic.request import Request
 
-from utils import SessionConfig
+from utils import AuthConfig
 
-# Since we're always calling this on many endpoints, it's probably a decorator longer term.
-# I'm also not sure it's "Session", it might be "Auth" that just so happens to encrypt/decrypt
-# a session cookie.
-class Session:
+class Auth:
     """
-    A thing to handle the encryption and decryption of browser session tokens,
-    also holds associated auth methods.
+    A thing to handle the encryption and decryption of an auth related cookie,
+    also holds associated authentication and authorization methods.
     """
     
-    def __init__(self, cfg: SessionConfig, request: Request, logger):
+    def __init__(self, cfg: AuthConfig, request: Request, logger):
         self.cfg = cfg
         self.logger = logger
         self.request = request
@@ -29,14 +26,14 @@ class Session:
             redirect_uri=self.cfg.redirect_uri
         )
 
-        self.cookie = request.cookies.get('session', None)
+        self.cookie = request.cookies.get('user', None)
         if not self.cookie:
             self.pristine()
 
-    # TODO: encrypt not encode
-    def encode_session_cookie(self, sub_dict):
+
+    def encrypt_cookie(self, sub_dict):
         """
-        Sets the session cookie with the provided sub_dict as
+        Encrypts the self.cookie with the provided sub_dict as
         the "sub" field.
         """
 
@@ -45,7 +42,7 @@ class Session:
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(
                     days=0,
                     hours=0,
-                    minutes=self.cfg.session_expiry_minutes
+                    minutes=self.cfg.expiry_minutes
                     ),
                 'iat': datetime.datetime.utcnow(),
                 'sub': sub_dict
@@ -56,15 +53,21 @@ class Session:
                 algorithm=self.cfg.algorithm
             )
         except Exception as err:
-            self.logger.error(f'Failed to encode session cookie with exception:\n {err}'
+            self.logger.error(f'Failed to encrypt cookie with exception:\n {err}'
                 '\n Payload was {payload}')
             raise err
 
 
     # TODO: decrypt not decode
-    def decode_session_cookie(self, time_stamps=False) -> (dict):
+    def decrypt_cookie(self, time_stamps: bool = False) -> (dict):
         """
-        Decodes the session cookie
+        Decrpyt the cookie, of structure:
+
+        {
+            "sub":
+        }
+
+        If time_stamps = True we return whole cookie, otherwiswe just ["sub"]
         """
         try:
             payload = jwt.decode(self.cookie, self.cfg.encryption_key, algorithms=self.cfg.algorithm)
@@ -84,53 +87,65 @@ class Session:
 
     def set(self, key, value):
         """
-        Set a single field in the session ["sub"] dict
+        Set a single field in the .cookie["sub"] dict
         """
-        sub_dict = self.decode_session_cookie()
+        sub_dict = self.decrypt_cookie()
         sub_dict[key] = value
-        self.encode_session_cookie(sub_dict)
+        self.encrypt_cookie(sub_dict)
 
 
     def get(self, key):
         """
-        Get a single field from the session ["sub"] dict
+        Get a single field from the .cookie["sub"] dict
         """
         try:
-            sub_dict = self.decode_session_cookie()
+            sub_dict = self.decrypt_cookie()
             return sub_dict.get(key, None)
         except KeyError:
-            self.logger.warning(f'Unable to find key "{key}" in session cookie. Got {sub_dict.keys()}')
+            self.logger.warning(f'Unable to find key "{key}" in cookie. Got {sub_dict.keys()}')
             return None
 
 
     def remove(self, key):
         """
-        Delete a single field from the session ["sub"] dict
+        Delete a single field from the .cookie["sub"] dict
         """
-        sub_dict = self.decode_session_cookie()
+        sub_dict = self.decrypt_cookie()
         if not sub_dict.pop(key, None):
-            self.logger.warning(f'Called Session.remove() for field "{key}" but no '
+            self.logger.warning(f'Called Auth.remove() for field "{key}" but no '
                 'such field existed in the ["sub"] dict')
-        self.encode_session_cookie(sub_dict)
+        self.encrypt_cookie(sub_dict)
 
 
     def get_auth_uri(self):
+        """
+        Get the authentication url, also sets state against .cookie["sub"]["state"]
+        """
         uri, state = self.client.create_authorization_url(self.cfg.authorize_url)
         self.set("state", state)
         return uri
 
 
     def get_access_token(self):
+        """
+        Gets access_token
+        """
         token_dict = self.get_token()
         return token_dict["access_token"]
 
 
     def set_access_token(self):
+        """
+        Gets and then sets an access_token against .cookie["sub"]["access_token"]
+        """
         access_token = self.get_access_token()
         self.set("access_token", access_token)
 
 
-    def get_token(self):
+    # TODO - we might be able to use some of the "id_token" information for security,
+    # for example: check intended recipient, I _think_ it should match 
+    # self.cfg.client_id)
+    def get_token(self) -> (dict):
         """
         Gets the token(s) response from auth0, example:
         
@@ -167,7 +182,7 @@ class Session:
         Logs the user out via auth0 api.
         
         If that is successful, also removes the users token from
-        the session cookie.
+        the cookie.
         """
 
         r = requests.get(self.cfg.logout_url, headers = {"client_id": self.cfg.client_id})
@@ -177,15 +192,17 @@ class Session:
             self.remove("access_token")
 
 
+    # TODO - in production this should be more generic, look for _something_
+    # in _some_ namespace. The equivient of _has_role() should just wrap that.
     def _has_role(self, role) -> (bool):
         """
-        Given the access token from the session, does the user in question have
+        Given the access token from the cookie, does the user in question have
         the queried role under the self.cfg.roles_namespace key.
         """
 
         # Treat no token as does not have role, we don't want to be directing
         # public users through a login.
-        decoded_cookie = self.decode_session_cookie()
+        decoded_cookie = self.decrypt_cookie()
         if 'access_token' not in decoded_cookie:
             return False
 
@@ -208,7 +225,7 @@ class Session:
 
     def has_admin(self) -> (bool):
         """
-        Does the current user sessions contain an access token that
+        Does the current user cookie contain an access token that
         identifies them as having then "admin" role under the
         roles_namespace key.
         """
@@ -217,7 +234,7 @@ class Session:
 
     def pristine(self):
         """
-        Resets to a pristine (empty other than time stamps) session cookie
+        Resets to a pristine (empty other than time stamps) cookie
         """
-        self.encode_session_cookie({})
+        self.encrypt_cookie({})
 
