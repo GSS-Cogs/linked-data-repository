@@ -63,11 +63,11 @@ This server is using the standard `oidc` scope. So a typical "log in with google
 
 Auth0 [rules](https://auth0.com/docs/customize/rules) allow you to extend the information returned from the `/userinfo` endpoint, so **after** authentication, but **before** said userinfo is returned to the app.
 
-Im this case I've set a `rule` on an [https://auth0.com/](https://auth0.com/) account to add an `admin` permission under the roles namespace (see configuration.ini) but only for authenticated google `gsscogs.uk` users.
+In this case I've set a `rule` on an [https://auth0.com/](https://auth0.com/) account to add an `admin` role under the roles namespace (see configuration.ini) but only for authenticated google `@gsscogs.uk` users.
 
 _Note - the roles namespace defined in the apps cofiguration **must** match the same one used in the auth `rule`._ 
 
-In production the `rule`'s would likely be more nuanced than this (some variation of calling off to a database to get a given users roles) but the approach would/could be the same, i.e
+In production the `rule`'s would likely be more nuanced than this (some variation of calling off to a database to get a given users roles) but the approach would/could be the same or similar, i.e
 
 - authenticate
 - use `rule` logic to extend `userinfo` with authorisations/roles/permissions.
