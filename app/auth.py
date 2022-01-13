@@ -58,10 +58,9 @@ class Auth:
             raise err
 
 
-    # TODO: decrypt not decode
     def decrypt_cookie(self, time_stamps: bool = False) -> (dict):
         """
-        Decrpyt the cookie, of structure:
+        Decrypt the cookie, of structure:
 
         {
             "sub":
