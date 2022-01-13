@@ -20,7 +20,7 @@ _Authorises_ people based on if said google account has a `@gsscog.uk` email add
 
 Caching is a pig, so if you want to try different gmail accounts, its easiest to just use an incognito window.
 
-Once logged in, your access token is stored in a asymetrically encrypted cookie in the browser (http only, only sent via https, stored against this serves domain only). Until it expires or you log out, said access token is used to check your roles (i.e - do you have "admin"?) when you hit the `/` endpoint.
+Once logged in, your access token is stored in an encrypted cookie in the browser (http only, only sent via https, stored against this serves domain only). Until it expires or you log out, said access token is used to check your roles (i.e - do you have "admin"?) when you hit the `/` endpoint.
 
 I have _not_ implement refresh logic or anything like that, it's just a spike.
 
