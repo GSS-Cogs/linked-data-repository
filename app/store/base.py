@@ -3,15 +3,7 @@ from enum import Enum
 from pathlib import Path
 from typing import List, Union
 
-
-class MetadataKeys(Enum):
-    """
-    Simple Enum for in-use metadata record field names.
-    """
-
-    csv_path = "csv_path"
-    csvw_path = "csvw_path"
-    rdf_path = "ttl_path"
+from app.models.metadata import Metadata
 
 
 class BaseStore(metaclass=ABCMeta):
@@ -38,10 +30,10 @@ class BaseStore(metaclass=ABCMeta):
     """
 
     def __init__(self):
-        self.meta_keys = MetadataKeys
+        pass
 
     @abstractmethod
-    def setup(self):
+    def setup(self, *args, **kwargs):
         """
         Generic setup method to allow for the use of more
         complex database solutions.
@@ -51,13 +43,12 @@ class BaseStore(metaclass=ABCMeta):
     @abstractmethod
     def create_resource(self, graph_identifier: str) -> (str):
         """
-        Creates a new metadata resource record. Returns a unique identifier for
-        the created record.
+        Creates a new metadata resource record. Returns a metadata_record_id
         """
         pass
 
     @abstractmethod
-    def get_resource(self, resource_id: str) -> (dict):
+    def get_resource(self, **kwargs) -> (Metadata):
         """
         Returns a dictionary representation of the metadata we are holding
         about a single resource, using the id of the resource to select it
@@ -65,7 +56,7 @@ class BaseStore(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def list_resources(self, **kwargs) -> (List[dict]):
+    def list_resources(self, **kwargs) -> (List[Metadata]):
         """
         Returns a list of resources.
         Keyword args allow filtering of what's being returned.
@@ -73,50 +64,15 @@ class BaseStore(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def upsert_resource_field(self, resource_id: int, field: str, value: str):
+    def upsert_resource_field(self, metadata_record_id: int, field: str, value: str):
         """
         Given a resource id, allows upsert of a single field
         """
         pass
 
     @abstractmethod
-    def get_resource_field(self, resource_id: int, field: str) -> (object):
+    def get_resource_field(self, metadata_record_id: int, field: str) -> (object):
         """
         Given a resource id, acquires value of a single field
         """
         pass
-
-    # ------------------------------------------------------------------------
-    # Note: All following methods are wrappers and associated functionality, none
-    # of this should ever never need to be overwritten.
-    # DO add more as needed, we want to keep the data logic our of the app proper.
-
-    @staticmethod
-    def ensure_path(maybe_path: Union[str, Path]):
-        if not isinstance(maybe_path, Path):
-            maybe_path = Path(maybe_path)
-            assert maybe_path.exists()
-        return maybe_path
-
-    def set_csv(self, resource_id: str, csv_path: Union[Path, str]):
-        csv_path = self.ensure_path(csv_path)
-        self.upsert_resource_field(resource_id, self.meta_keys.csv_path.value, csv_path)
-
-    def get_csv_path(self, resource_id: str) -> (Path):
-        return self.get_resource_field(resource_id, self.meta_keys.csv_path.value)
-
-    def set_csvw(self, resource_id: str, csvw_path: str):
-        csvw_path = self.ensure_path(csvw_path)
-        self.upsert_resource_field(
-            resource_id, self.meta_keys.csvw_path.value, csvw_path
-        )
-
-    def get_csvw_path(self, resource_id: str) -> (Path):
-        return self.get_resource_field(resource_id, self.meta_keys.csvw_path.value)
-
-    def set_rdf(self, resource_id: str, rdf_path: str):
-        rdf_path = self.ensure_path(rdf_path)
-        self.upsert_resource_field(resource_id, self.meta_keys.rdf_path.value, rdf_path)
-
-    def get_rdf_path(self, resource_id: str) -> (Path):
-        return self.get_resource_field(resource_id, self.meta_keys.rdf_path.value)

@@ -1,2 +1,4 @@
 __pycache__
 .DS_Store
+app/stub_data
+features/fixtures/stub_store_data/temporary
