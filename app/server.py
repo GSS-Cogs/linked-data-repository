@@ -7,7 +7,7 @@ from sanic import Sanic, json
 from app.services import compose, BaseMessager, BaseStore
 
 # TODO - once merged with a/the pr containing configuration handling,
-# take the default str arguments for drivers from the configuration.ini.
+# also take the default str arguments for drivers from the configuration.ini.
 def create_app(
     name: str = str("_" + str(random.randint(0, 10000))),
     store: Union[str, BaseStore] = 'Nop',
