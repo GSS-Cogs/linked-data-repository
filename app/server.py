@@ -23,10 +23,10 @@ def create_app(
     Services can be specified via keyword str arguments or by passing
     in instanitated classes implementing the relevant BaseX abstracts.
 
-    :sanic_test_mode:       turns off Sanics default behavious of caching 
+    :sanic_test_mode:       toggles Sanics default behaviour of caching 
                             instanitated app instances
     :enforce_base_classes:  disables type check of driver base class (so 
-                            Mocks can be passed in).
+                            test Mocks can be passed in).
     """
 
     Sanic.test_mode = sanic_test_mode
