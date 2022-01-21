@@ -8,7 +8,7 @@ The allows:
 * Easy use of stubs and/or changing of drivers during development.
 * Easy implemented composable tests.
 
-Drivers can be specified to the app as:
+Drivers can be specified to `create_app` as:
 * Instantiated objects (for example, when creating test mocks)
 * A string label mapping to a defined driver.
 
