@@ -14,23 +14,22 @@ def create_app(
     name: str = str("_" + str(random.randint(0, 10000))),
     store: Union[str, BaseStore] = 'Nop',
     messager: Union[str, BaseMessager] = 'Nop',
-    test_mode: bool = False
+    sanic_test_mode: bool = False,
+    enforce_base_classes: bool = True
 ) -> (Sanic):
     """
-    Instantiates our Sanic application.
+    Instantiates Sanic application.
 
     Services can be specified via keyword str arguments or by passing
     in instanitated classes implementing the relevant BaseX abstracts.
 
-    This constructor also applies basic type and sanity checks.
-    
-    The "register" bool is used by Sanic to register and cache instantiated app 
-    instances. The default behaviour is True an anyway, we're just passing a 
-    bool so we can toggle this behaviour off while testing (to avoid app instance
-    naming collisions). 
+    :sanic_test_mode:       turns off Sanics default behavious of caching 
+                            instanitated app instances
+    :enforce_base_classes:  disables type check of driver base class (so 
+                            Mocks can be passed in).
     """
 
-    Sanic.test_mode = test_mode
+    Sanic.test_mode = sanic_test_mode
     app = Sanic(name=name)
 
     # Adding initialised drivers to app.ctx
@@ -50,12 +49,13 @@ def create_app(
             driver_in_use
         )
 
-        # Assert driver has the correct parent class
-        driver_in_use_base = driver_in_use.__class__.__bases__[-1]
-        if str(driver_in_use_base) != str(driver_base_class):
-            raise TypeError(
-                wrong_driver_type_msg.format(driver_in_use_base, driver_base_class)
-            )
+        # Assert driver is extending the correct parent class
+        if enforce_base_classes:
+            driver_in_use_base = driver_in_use.__class__.__bases__[-1]
+            if str(driver_in_use_base) != str(driver_base_class):
+                raise TypeError(
+                    wrong_driver_type_msg.format(driver_in_use_base, driver_base_class)
+                )
             
     # Driver configuration
     # TODO: pass through actual config (once merged with a PR that contains some)
