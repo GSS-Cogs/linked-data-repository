@@ -20,8 +20,9 @@ def create_app(
     """
     Instantiates Sanic application.
 
-    Services can be specified via keyword str arguments or by passing
-    in instanitated classes implementing the relevant BaseX abstracts.
+    Services can be specified via keyword str arguments that map to 
+    drivers as specified in app.services.inventory, or by passing
+    in instantiated classes implementing the relevant BaseX abstracts.
 
     :sanic_test_mode:       toggles Sanics default behaviour of caching 
                             instanitated app instances
@@ -37,8 +38,10 @@ def create_app(
     app.ctx.messager = (
         compose.messager(messager) if isinstance(messager, str) else messager
     )
+    
+    # TODO: holding value, use actual config (once merged with a PR that contains some)
+    config = ""
 
-    # Policing
     for driver_in_use, driver_base_class in {
         app.ctx.store: BaseStore,
         app.ctx.messager: BaseMessager,
@@ -57,11 +60,8 @@ def create_app(
                     wrong_driver_type_msg.format(driver_in_use_base, driver_base_class)
                 )
             
-    # Driver configuration
-    # TODO: pass through actual config (once merged with a PR that contains some)
-    config = ""
-    app.ctx.store.setup(config=config)
-    app.ctx.messager.setup(config=config)
+        # Driver configuration
+        driver_in_use.setup(config=config)
 
     return app
 
