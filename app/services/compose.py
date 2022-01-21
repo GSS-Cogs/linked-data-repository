@@ -9,13 +9,13 @@ class UnknownDriverError(Exception):
     """
 
     def __init__(self, label: str, service: str):
-        self.msg = f'Not "{label}" driver found for service: "{service}"'
+        self.msg = f'"{label}" driver not found for service: "{service}"'
 
 
 def _driver_getter(label: str, inventory: dict, driver_name: str) -> (object):
     """
     Factored out logic for selecting driver based on
-    povided label
+    provided label
     """
     driver = inventory.get(label, None)
     if not driver:

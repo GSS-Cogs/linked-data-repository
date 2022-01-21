@@ -1,8 +1,11 @@
 from itertools import permutations
-
 from unittest.mock import Mock
 
+import pytest
+
 from app.server import create_app
+from app.services import compose
+from app.services.compose import UnknownDriverError
 from app.services.store.drivers import NopStore
 from app.services.inventory import STORES, MESSAGERS
 
@@ -81,3 +84,18 @@ def test_all_instantiated_driver_combinations_valid():
             raise Exception(
                 f"Unable to instantiate app with provided drivers: \n{kwargs}"
             ) from err
+
+
+def test_compose_fails_with_unknown_driver_label():
+    """
+    Test that passing unknown labels to the compose
+    functions generate the expected error.
+    """
+    
+    with pytest.raises(UnknownDriverError):        
+        compose.store('im not a driver!!!')
+
+    with pytest.raises(UnknownDriverError):        
+        compose.messager('im not a driver!!!')
+
+        

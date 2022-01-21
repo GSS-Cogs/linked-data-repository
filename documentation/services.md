@@ -16,7 +16,7 @@ _Note: The functionality for supporting selecting drivers by label is to allow f
 
 ### Adding a new service driver
 
-All modular service drivers used by this app are created in the same way:
+All service drivers used by this app are created in the same way:
 
 * Create relevant base class as `app/services/<name of new service>/base.py`
 * Implement at least one driver in `app/services/<name of new service>/drivers/<name of driver>.py`
