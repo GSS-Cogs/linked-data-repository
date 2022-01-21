@@ -9,7 +9,8 @@ from app.services import compose, BaseMessager, BaseStore
 wrong_driver_type_msg = "Driver '{}' does not but should have parent class '{}'."
 driver_not_instaniated_msg = "Driver '{}' is not but should have been instantiated."
 
-
+# TODO - once merged with a/the pr containing configuration handling,
+# take the default str arguments for drivers from the configuration.ini.
 def create_app(
     name: str = str("_" + str(random.randint(0, 10000))),
     store: Union[str, BaseStore] = 'Nop',
@@ -22,7 +23,7 @@ def create_app(
 
     Services can be specified via keyword str arguments that map to 
     drivers as specified in app.services.inventory, or by passing
-    in instantiated classes implementing the relevant BaseX abstracts.
+    in instantiated classes extending the relevant BaseX classes.
 
     :sanic_test_mode:       toggles Sanics default behaviour of caching 
                             instanitated app instances
@@ -75,5 +76,4 @@ if __name__ == "__main__":
     async def home(request):
         return json({"just some": "holding text"})
 
-    # note: for development, i.e when you `pipenv run python3 ./app/server.py`
     app.run(host="localhost", port=3000, debug=True, access_log=True)
