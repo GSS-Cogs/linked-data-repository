@@ -6,9 +6,6 @@ from sanic import Sanic, json
 
 from app.services import compose, BaseMessager, BaseStore
 
-wrong_driver_type_msg = "Driver '{}' does not but should have parent class '{}'."
-driver_not_instaniated_msg = "Driver '{}' is not but should have been instantiated."
-
 # TODO - once merged with a/the pr containing configuration handling,
 # take the default str arguments for drivers from the configuration.ini.
 def create_app(
@@ -49,16 +46,15 @@ def create_app(
     }.items():
 
         # Assert driver has been instanitated
-        assert not inspect.isclass(driver_in_use), driver_not_instaniated_msg.format(
-            driver_in_use
-        )
+        assert not inspect.isclass(driver_in_use), \
+            f"Driver '{driver_in_use}' is not but should have been instantiated."
 
         # Assert driver is extending the correct parent class
         if enforce_base_classes:
             driver_in_use_base = driver_in_use.__class__.__bases__[-1]
             if str(driver_in_use_base) != str(driver_base_class):
                 raise TypeError(
-                    wrong_driver_type_msg.format(driver_in_use_base, driver_base_class)
+                    f"Driver '{driver_in_use_base}' does not but should have parent class '{driver_base_class}'."
                 )
             
         # Driver configuration
