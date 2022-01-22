@@ -1,6 +1,6 @@
+from box import Box
+
 from .messager.drivers import NopMessager
 from .store.drivers import NopStore
 
-STORES = {"Nop": NopStore}
-
-MESSAGERS = {"Nop": NopMessager}
+INVENTORY = {"store": {"Nop": NopStore}, "messager": {"Nop": NopMessager}}

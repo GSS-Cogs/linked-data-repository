@@ -12,8 +12,6 @@ Drivers can be specified to `create_app` as:
 * Instantiated objects (for example, when creating test mocks)
 * A string label mapping to a defined driver.
 
-_Note: The functionality for supporting selecting drivers by label is to allow for specifiying driver via configuration rather than application code._
-
 ### Adding a new service driver
 
 All service drivers used by this app are created in the same way:
@@ -21,8 +19,8 @@ All service drivers used by this app are created in the same way:
 * Create relevant base class as `app/services/<name of new service>/base.py`
 * Implement at least one driver in `app/services/<name of new service>/drivers/<name of driver>.py`
 * Create a text to driver mapping dict in `app/services/inventory.py`
-* Create a "get service" wrapper in `app/services/composer.py`
-* Add your new service driver to the `create_app` constructor in `app/server.py` 
+* Add a constructor in `app/services/composer.py` (see `store` and `messager` for examples).
+* Add your new service driver to the `create_app` as defined in `app/server.py` 
 
 
 ### Testing

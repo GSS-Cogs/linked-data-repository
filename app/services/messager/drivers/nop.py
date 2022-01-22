@@ -1,5 +1,6 @@
 from app.services.messager.base import BaseMessager
 
+
 class NopMessager(BaseMessager):
     """
     A "Not Operational" messager. This messager will satisfy the
