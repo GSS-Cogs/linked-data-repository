@@ -168,22 +168,6 @@ toml = "*"
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
 
 [[package]]
-name = "python-box"
-version = "5.4.1"
-description = "Advanced Python dictionaries with dot notation access"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.extras]
-pyyaml = ["pyyaml"]
-all = ["ruamel.yaml", "toml", "msgpack"]
-msgpack = ["msgpack"]
-"ruamel.yaml" = ["ruamel.yaml"]
-toml = ["toml"]
-yaml = ["ruamel.yaml"]
-
-[[package]]
 name = "sanic"
 version = "21.12.1"
 description = "A web server and web framework that's written to go fast. Build fast. Run fast."
@@ -263,7 +247,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "204e07f021a01d51abf85455a09165d1b8ebd7e83074019dc94c812930f33e2f"
+content-hash = "698a43633010a38d8e0359fb6b4ef146f665df0e28b5abe316a59553bec235aa"
 
 [metadata.files]
 aiofiles = [
@@ -416,10 +400,6 @@ pyparsing = [
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
     {file = "pytest-6.2.5.tar.gz", hash = "sha256:131b36680866a76e6781d13f101efb86cf674ebb9762eb70d3082b6f29889e89"},
-]
-python-box = [
-    {file = "python-box-5.4.1.tar.gz", hash = "sha256:b68e0f8abc86f3deda751b3390f64df64a0989459de51ba4db949662a7b4d8ac"},
-    {file = "python_box-5.4.1-py3-none-any.whl", hash = "sha256:60ae9156de34cf92b899bd099580950df70a5b0813e67a3310a1cdd1976457fa"},
 ]
 sanic = [
     {file = "sanic-21.12.1-py3-none-any.whl", hash = "sha256:53230ba1a1081e6b075e58339a47c07d2bf618119fa40ba88c69fe57c99126f1"},

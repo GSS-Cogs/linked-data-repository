@@ -1,5 +1,3 @@
-from box import Box
-
 from .messager.drivers import NopMessager
 from .store.drivers import NopStore
 
