@@ -32,7 +32,7 @@ class Composer:
         driver = self.inventory[driver_name].get(label, None)
         if not driver:
             raise UnknownDriverError(label, driver_name)
-        return driver()
+        return driver
 
     def _use_driver(self, driver: object, driver_base_class: object) -> (object):
         """
