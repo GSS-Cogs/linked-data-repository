@@ -17,7 +17,7 @@ def test_documentation_example():
     Sanity check that the composable approach to testing
     with drivers is working as per documentation
     """
-    test_store = Mock()
+    test_store = NopStore()
 
     test_store.get_record = lambda: {"mock": "record"}
 

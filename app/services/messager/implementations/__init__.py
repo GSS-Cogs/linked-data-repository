@@ -1,1 +1,1 @@
-from app.services.messager.drivers.nop import NopMessager
+from app.services.messager.implementations.nop import NopMessager

@@ -54,6 +54,6 @@ def test_for_getting_a_record():
 
 ```
 
-In the above example, the kwarg `sanic_test_mode` disables Sanic automated caching of every instantiated app (this can lead to namespace clashes, so is recommended for tests).  
+In the above example, the kwarg `sanic_test_mode = True` disables Sanic automated caching of every instantiated app (this can lead to namespace clashes, so is recommended for tests).  
 
-**Troubleshooting** - Should you encounter issues with the above outlined `Nop` approach, you can instantiate a `unittest.mock.Mock()` class and pass it in instead, however you'll need to include the keyword `enforce_base_classes = False` in the `create_app` constructor (because `mock.Mock()` would not extend the base class in question).
+**Troubleshooting** - Should you encounter issues with the above outlined `Nop` approach, you can instantiate a `unittest.mock.Mock()` class and pass it in instead, however you'll need to include the keyword `enforce_base_classes = False` in the `create_app` constructor (otherwise you'll get exceptions as `mock.Mock()` would not extend the base class in question).
