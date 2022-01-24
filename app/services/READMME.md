@@ -1,7 +1,7 @@
 
 ## Services
 
-We've implemented a simple composable pattern for interacting with dependent services (databases, message queues etc) for this app. This aproach revolves around using `create_app` from [server.py](https://github.com/GSS-Cogs/linked-data-repository/tree/app/server.py) with dynamic runtime arguments.
+We've implemented a simple composable pattern for interacting with dependent services (databases, message queues etc) for this app. This approach revolves around using `create_app` from [server.py](https://github.com/GSS-Cogs/linked-data-repository/tree/app/server.py) with dynamic runtime arguments.
 
 When you `create_app` the kwargs provided will define which of the service implementations (see `app/services/<name-of-thing>/implementations/*`) are used.
 
