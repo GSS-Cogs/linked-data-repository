@@ -17,7 +17,7 @@ class UnknownImplementationError(Exception):
 
 class Composer:
     """
-    For selecting and (where necessary) instantiating type checked service drivers
+    For selecting and (where necessary) instantiating type checked service implementations
     """
 
     def __init__(self, config, enforce_base_classes: bool):

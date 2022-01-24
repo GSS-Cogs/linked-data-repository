@@ -41,10 +41,10 @@ def test_documentation_with_mock_example():
     assert app.ctx.store.get_record() == {"mock": "record"}
     
 
-def test_drivers_must_be_correct_type():
+def test_implementations_must_extend_correct_base_class():
     """
-    Where implementation are being passed in, those classes
-    _must_ have the correct Base type.
+    Where service implementation are being passed in, those classes
+    _must_ extend the correct Base class.
     """
     not_a_messager = NopStore()
     expectation_met = False
@@ -56,7 +56,7 @@ def test_drivers_must_be_correct_type():
     assert expectation_met, FALLEN_THROUGH
 
 
-def test_all_instantiated_driver_combinations_valid():
+def test_all_inplemntation_combinations_valid():
     """
     Test that the app can be instantiated with
     all combinations of currently defined implementations.
@@ -71,9 +71,9 @@ def test_all_instantiated_driver_combinations_valid():
 
     for a_permutation in all_permutations:
         kwargs = {}
-        for driver in a_permutation:
-            assert len(driver) == 1
-            for k, v in driver.items():
+        for implementation_map in a_permutation:
+            assert len(implementation_map) == 1
+            for k, v in implementation_map.items():
                 assert k not in kwargs
                 kwargs[k] = v()
                 kwargs[k].setup()
