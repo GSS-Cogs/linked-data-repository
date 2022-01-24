@@ -23,7 +23,7 @@ def create_app(
 
     :sanic_test_mode:       toggles Sanics default behaviour of caching
                             instanitated app instances
-    :enforce_base_classes:  disables type check agaisnt expected base class
+    :enforce_base_classes:  disables type check against expected base class
                             (so mock.Mocks() can be passed in if needed).
     """
 
