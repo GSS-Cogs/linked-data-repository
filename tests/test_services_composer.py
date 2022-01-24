@@ -6,7 +6,7 @@ import pytest
 from app.server import create_app
 from app.services import Composer
 from app.services.compose import UnknownDriverError
-from app.services.store.drivers import NopStore
+from app.services.store.implementations import NopStore
 from app.services.inventory import INVENTORY
 
 FALLEN_THROUGH = "An expected/required exception has failed to be thrown, this code should NEVER trigger"
