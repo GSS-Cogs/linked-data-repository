@@ -26,12 +26,49 @@ class TestDecorator:
         """
             Run cli of the sanic app
         """
+
         return loop.run_until_complete(
             sanic_client(app, protocol=WebSocketProtocol))
 
-    def test_index_returns_200(self, app):
-        request, response = app.test_client.get('/')
-        assert response.status == 200
+    @pytest.mark.asyncio
+    async def test_fixture_test_client_get(test_cli):
+        """
+        Test GET request
+        """
+        resp = await test_cli.get('/test_get')
+        assert resp.status_code == 200
+        resp_json = resp.json()
+        assert resp_json == {"GET": True}
+
+    @pytest.mark.asyncio
+    async def test_fixture_test_client_post(test_cli):
+        """
+        Test POST request
+        """
+        resp = await test_cli.post('/test_post')
+        assert resp.status_code == 200
+        resp_json = resp.json()
+        assert resp_json == {"POST": True}
+
+    @pytest.mark.asyncio
+    async def test_fixture_test_client_put(test_cli):
+        """
+        Test PUT request
+        """
+        resp = await test_cli.put('/test_put')
+        assert resp.status_code == 200
+        resp_json = resp.json()
+        assert resp_json == {"PUT": True}
+
+    @pytest.mark.asyncio
+    async def test_fixture_test_client_delete(test_cli):
+        """
+        Test DELETE request
+        """
+        resp = await test_cli.delete('/test_delete')
+        assert resp.status_code == 200
+        resp_json = resp.json()
+        assert resp_json == {"DELETE": True}
 
     @pytest.fixture
     def test_create_access_token(self, mocker):
@@ -80,7 +117,7 @@ class TestDecorator:
 
             yield app
 
-    @pytest.mark.asyncio
+    @pytest.fixture
     async def test_jwt_wrong_token(test_cli):
         """
             Test 'incorrect' JWT token and 'forbidden' response
@@ -105,9 +142,8 @@ class TestDecorator:
         dummy_token = ''
         dummy_JWT_header_key = ''
         dummy_JWT_header_prefix = ''
-        resp = 'await'
 
-        test_cli.get(
+        resp = test_cli.get(
             '/protected',
             headers={
                 dummy_JWT_header_key: f"{dummy_JWT_header_prefix} {dummy_token}"},
