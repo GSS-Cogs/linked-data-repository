@@ -6,13 +6,13 @@ from .messager.base import BaseMessager
 from .inventory import INVENTORY
 
 
-class UnknownDriverError(Exception):
+class UnknownImplementationError(Exception):
     """
-    Raised where we are specifying an unknown driver.
+    Raised where we are specifying an unknown implementation.
     """
 
     def __init__(self, label: str, service: str):
-        self.msg = f'"{label}" driver not found for service: "{service}"'
+        self.msg = f'Implementation "{label}" not found for service: "{service}"'
 
 
 class Composer:
@@ -25,48 +25,55 @@ class Composer:
         self.config = config
         self.enforce_base_classes = enforce_base_classes
 
-    def _driver_from_label(self, label: str, driver_name: str) -> (object):
+    def _get_from_label(self, label: str, implementation_name: str) -> (object):
         """
-        Select a known driver based on the str label passed in
+        Select a known implementation based on the str label passed in
         """
-        driver = self.inventory[driver_name].get(label, None)
-        if not driver:
-            raise UnknownDriverError(label, driver_name)
-        return driver
+        implementation = self.inventory[implementation_name].get(label, None)
+        if not implementation:
+            raise UnknownImplementationError(label, implementation_name)
+        return implementation
 
-    def _use_driver(self, driver: object, driver_base_class: object) -> (object):
+    def _use(self, implementation: object, base_class: object) -> (object):
         """
-        Instantiates and configures driver (where needed) and validates it complies with
+        Instantiates (where needed) and validates a given impementation complies with
         the expected Base class before returning it.
         """
 
-        # Instanitate and configure where needed
-        if inspect.isclass(driver):
-            driver = driver()
-            driver.setup(config=self.config)
+        # Instanitate and configure
+        # note: this is the expected behaviour, we're accounting for pre-instanitation
+        # to allow flexibility for test scenarios.
+        if inspect.isclass(implementation):
+            implementation = implementation()
+            implementation.setup(config=self.config)
 
-        # Confirm driver is extending the correct parent class
+        # Confirm implementation is extending the correct base class
         if self.enforce_base_classes:
-            driver_in_use_base = driver.__class__.__bases__[-1]
-            if str(driver_in_use_base) != str(driver_base_class):
+            implementation_in_use_base = implementation.__class__.__bases__[-1]
+            if str(implementation_in_use_base) != str(base_class):
                 raise TypeError(
-                    f"Driver '{driver_in_use_base}' does not but should have parent class '{driver_base_class}'."
+                    f"'{implementation_in_use_base}' does not but should have base class '{base_class}'."
                 )
 
-        return driver
+        return implementation
 
-    def store(self, driver: Union[str, object]) -> (BaseStore):
-        """
-        Applies sanity checks and setup functions then return the requested store driver.
-        """
-        if isinstance(driver, str):
-            driver = self._driver_from_label(driver, "store")
-        return self._use_driver(driver, BaseStore)
 
-    def messager(self, driver: Union[str, object]) -> (BaseMessager):
+    # -----------------------
+    # From here is wrappers, it would be best to continue the pattern as
+    # servies are added
+    
+    def store(self, implementation: Union[str, object]) -> (BaseStore):
         """
-        Applies sanity checks and setup functions then return the requested messager driver.
+        Applies sanity checks and setup functions then return the requested store implementation.
         """
-        if isinstance(driver, str):
-            driver = self._driver_from_label(driver, "messager")
-        return self._use_driver(driver, BaseMessager)
+        if isinstance(implementation, str):
+            implementation = self._get_from_label(implementation, "store")
+        return self._use(implementation, BaseStore)
+
+    def messager(self, implementation: Union[str, object]) -> (BaseMessager):
+        """
+        Applies sanity checks and setup functions then return the requested messager implementation.
+        """
+        if isinstance(implementation, str):
+            implementation = self._get_from_label(implementation, "messager")
+        return self._use(implementation, BaseMessager)
