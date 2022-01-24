@@ -35,7 +35,7 @@ All services used by this app are created in the same way:
 ```python
 
 from app.server import create_app
-from app.servie.store import NopStore
+from app.service.store import NopStore
 
 def test_for_getting_a_record():
     """
