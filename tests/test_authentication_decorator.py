@@ -1,5 +1,5 @@
 from sanic import Sanic
-from sanic.websocket import WebSocketProtocol
+from websockets import WebSocketClientProtocol
 import pytest
 import requests
 import json
@@ -28,13 +28,14 @@ class TestDecorator:
         """
 
         return loop.run_until_complete(
-            sanic_client(app, protocol=WebSocketProtocol))
+            sanic_client(app, protocol=WebSocketClientProtocol))
 
     @pytest.mark.asyncio
     async def test_fixture_test_client_get(test_cli):
         """
         Test GET request
         """
+
         resp = await test_cli.get('/test_get')
         assert resp.status_code == 200
         resp_json = resp.json()
