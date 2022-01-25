@@ -22,7 +22,7 @@ Will run on PR's into develop or master, merges with test fails will not be perm
 
 To run tests locally use `poetry run pytest ./tests/* -v` (v is for verbose, you'll want that).
 
-### Releasing Process / Images
+### Release Process / Images
 
 A new `gsscogs/linked-data-repository:develop` image will be pushed to dockerhub on commits to the `develop` branch.
 
