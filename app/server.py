@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import random
 from typing import Union
 
@@ -50,4 +51,5 @@ if __name__ == "__main__":
     async def home(request):
         return json({"just some": "holding text"})
 
-    app.run(host="localhost", port=3000, debug=True, access_log=True)
+    app.run(host="0.0.0.0", port=3000, debug=True, access_log=True)
+
