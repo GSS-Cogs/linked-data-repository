@@ -28,5 +28,5 @@ A new `gsscogs/linked-data-repository:develop` image will be pushed to dockerhub
 
 A new `gsscogs/linked-data-repository:master` image will **only** be build on **release** of the master branch code.
 
-The convention is to only merge `develop` -> `master` as the immediate precurrsor of an official release of `master` (so both `develop` and `master` alwaays remain representative of what's contained in the public dockerhub images).
+The convention is to only merge `develop` -> `master` as the immediate precurrsor of an official release of `master` (so both `develop` and `master` remain representative of what's contained in the public dockerhub images).
 

@@ -1,4 +1,4 @@
-# Rebuild the ./lock file using a pytrhon image
+# Rebuild the ./lock file using a python image
 # to avoid accidentally dragging in any mac os dependencies.
 
 poetry.lock: pyproject.toml
