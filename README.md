@@ -20,7 +20,7 @@ A repository to hold and store CSV-Ws, Turtle and other Linked data
 
 Will run on PR's into develop or master, merges with test fails will not be permitted.
 
-To run tests locally use `poetry run pytest ./tests -v` (v is for verbose, you'll want that).
+To run tests locally use `poetry run pytest ./tests/* -v` (v is for verbose, you'll want that).
 
 ### Releasing Process / Images
 
