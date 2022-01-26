@@ -1,9 +1,9 @@
 from abc import ABCMeta, abstractmethod
 
 
-class BaseMessager(metaclass=ABCMeta):
+class BaseMessenger(metaclass=ABCMeta):
     """
-    Generic base class for our messager provider.
+    Generic base class for our messenger provider.
     """
 
     @abstractmethod

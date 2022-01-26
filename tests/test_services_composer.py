@@ -39,7 +39,7 @@ def test_documentation_with_mock_example():
     app = create_app(store=test_store, sanic_test_mode=True, enforce_base_classes=False)
 
     assert app.ctx.store.get_record() == {"mock": "record"}
-    
+
 
 def test_implementations_must_extend_correct_base_class():
     """
@@ -91,8 +91,8 @@ def test_compose_fails_with_unknown_implementation_label():
     Test that passing unknown labels to the compose
     functions generate the expected error.
     """
-    
-    composer = Composer('', True)
+
+    composer = Composer("", True)
 
     with pytest.raises(UnknownImplementationError):
         composer.store("I r an unknown implementation")

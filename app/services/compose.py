@@ -57,11 +57,10 @@ class Composer:
 
         return implementation
 
-
     # -----------------------
     # From here is wrappers, it would be best to continue the pattern as
     # servies are added
-    
+
     def store(self, implementation: Union[str, object]) -> (BaseStore):
         """
         Applies sanity checks and setup functions then return the requested store implementation.
