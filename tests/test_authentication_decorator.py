@@ -43,9 +43,8 @@ class TestDecorator:
         func = Mock()
         decorated_auth_func = authorised(func)
         request, resp = app.test_client.get('/')
-        # import pdb; pdb.set_trace()
         dummy_response = decorated_auth_func(name='dummy_name')
-        assert not func.called()
+        assert not func.called
 
     @pytest.mark.asyncio
     def test_user_authenticated(self, app):
@@ -64,7 +63,6 @@ class TestDecorator:
         """
         Test GET request
         """
-        # import pdb; pdb.set_trace()
         resp = app.test_client.get('/test_get')
         assert resp.status_code == 200
         resp_json = resp.json()
