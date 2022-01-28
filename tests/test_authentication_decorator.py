@@ -1,77 +1,107 @@
 from sanic import Sanic
 from websockets import WebSocketClientProtocol
 import pytest
+import pytest_asyncio
 import requests
 import json
 from logging import Logger
+from mock import Mock
 from app.auth import Auth
+from app.utils.configuration.decorators import authorised
 
 
 class TestDecorator:
 
     @pytest.mark.asyncio
-    @pytest.fixture
+    @pytest.yield_fixture
     def app(self):
         import random
         app = Sanic(name=str('_' + str(random.randint(0, 10000))))
 
         @app.route("/protected", methods=["GET"])
         async def protected(*args, **kwargs):
-            return json({}, 204)
+            return response.json({}, 204)
 
         yield app
+    #
+    # @pytest.fixture
+    # def test_cli(loop, app, test_server):
+    #     """
+    #         Run cli of the sanic app
+    #     """
+    #     # import pdb; pdb.set_trace()
+    #     return loop.run_until_complete(
+    #         test_server(app))
 
-    @pytest.fixture
-    def test_cli(loop, app, sanic_client):
+    # @pytest.fixture
+    @pytest.mark.asyncio
+    def test_no_user(self, app):
         """
-            Run cli of the sanic app
+        Test user not authenticated
         """
 
-        return loop.run_until_complete(
-            sanic_client(app, protocol=WebSocketClientProtocol))
+        func = Mock()
+        decorated_auth_func = authorised(func)
+        request, resp = app.test_client.get('/')
+        # import pdb; pdb.set_trace()
+        dummy_response = decorated_auth_func(name='dummy_name')
+        assert not func.called()
 
     @pytest.mark.asyncio
-    async def test_fixture_test_client_get(test_cli):
+    def test_user_authenticated(self, app):
+        """
+        Test user authenticated
+        """
+        func = Mock(return_value='ok')
+        decorated_auth_func = authorised(func)
+        request, resp = app.test_client.get('/')
+        dummy_response = decorated_auth_func(name=request)
+        func.assert_called_with(name='test')
+        assert_equal(dummy_response, 'ok')
+
+    @pytest.mark.asyncio
+    async def test_fixture_test_client_get(app):
         """
         Test GET request
         """
-
-        resp = await test_cli.get('/test_get')
+        # import pdb; pdb.set_trace()
+        resp = app.test_client.get('/test_get')
         assert resp.status_code == 200
         resp_json = resp.json()
         assert resp_json == {"GET": True}
 
     @pytest.mark.asyncio
-    async def test_fixture_test_client_post(test_cli):
+    async def test_fixture_test_client_post(app):
         """
         Test POST request
         """
-        resp = await test_cli.post('/test_post')
+        resp = app.test_client.post('/test_post')
         assert resp.status_code == 200
         resp_json = resp.json()
         assert resp_json == {"POST": True}
 
     @pytest.mark.asyncio
-    async def test_fixture_test_client_put(test_cli):
+    async def test_fixture_test_client_put(app):
         """
         Test PUT request
         """
-        resp = await test_cli.put('/test_put')
+        resp = app.test_client.put('/test_put')
         assert resp.status_code == 200
         resp_json = resp.json()
         assert resp_json == {"PUT": True}
 
     @pytest.mark.asyncio
-    async def test_fixture_test_client_delete(test_cli):
+    async def test_fixture_test_client_delete(app):
         """
         Test DELETE request
         """
-        resp = await test_cli.delete('/test_delete')
+        resp = app.test_client.delete('/test_delete')
         assert resp.status_code == 200
         resp_json = resp.json()
         assert resp_json == {"DELETE": True}
 
     @pytest.fixture
+    @pytest.mark.asyncio
     def test_create_access_token(self, mocker):
         """
         Test access token
@@ -93,6 +123,7 @@ class TestDecorator:
             assert raw_token == "access_token"
 
     @pytest.fixture
+    @pytest.mark.asyncio
     def test_app_initialize(self, mocker):
         """
             Initialize the sanic app with JWT token
@@ -118,8 +149,8 @@ class TestDecorator:
 
             yield app
 
-    @pytest.fixture
-    async def test_jwt_wrong_token(test_cli):
+    @pytest.mark.asyncio
+    async def test_jwt_wrong_token(app):
         """
             Test 'incorrect' JWT token and 'forbidden' response
         """
@@ -127,7 +158,7 @@ class TestDecorator:
         dummy_JWT_header_key = ''
         dummy_JWT_header_prefix = ''
 
-        resp = await test_cli.get(
+        resp = await app.test_client.get(
             '/protected',
             headers={
                 dummy_JWT_header_key: f"{dummy_JWT_header_prefix} {dummy_token}"},
@@ -136,7 +167,7 @@ class TestDecorator:
         assert resp.status == 422
 
     @pytest.mark.asyncio
-    def test_jwt_correct_token(test_cli):
+    def test_jwt_correct_token(app):
         """
             Test 'Correct' JWT token with 'success' response
         """
@@ -144,7 +175,7 @@ class TestDecorator:
         dummy_JWT_header_key = ''
         dummy_JWT_header_prefix = ''
 
-        resp = test_cli.get(
+        resp = app.test_client.get(
             '/protected',
             headers={
                 dummy_JWT_header_key: f"{dummy_JWT_header_prefix} {dummy_token}"},
