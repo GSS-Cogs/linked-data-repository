@@ -10,6 +10,7 @@ from app.auth import Auth
 from app.utils.configuration.decorators import authorised
 
 
+
 class TestDecorator:
 
     @pytest.mark.asyncio
@@ -58,27 +59,29 @@ class TestDecorator:
         assert dummy_response._mock_return_value == 'ok'
 
     @pytest.mark.asyncio
-    async def test_fixture_test_client_get(app):
+    async def test_fixture_test_client_get(self, app):
         """
         Test GET request
         """
-        resp = app.test_client.get('/test_get')
+        resp = await app.test_client.get('/test_get')
         assert resp.status_code == 200
-        resp_json = resp.json()
+        resp_json = await resp.json()
+        import pdb; pdb.set_trace()
         assert resp_json == {"GET": True}
 
+
     @pytest.mark.asyncio
-    async def test_fixture_test_client_post(app):
+    async def test_fixture_test_client_post(self, app):
         """
         Test POST request
         """
-        resp = app.test_client.post('/test_post')
+        resp = await app.test_client.post('/test_post')
         assert resp.status_code == 200
-        resp_json = resp.json()
+        resp_json = await resp.json()
         assert resp_json == {"POST": True}
 
     @pytest.mark.asyncio
-    async def test_fixture_test_client_put(app):
+    async def test_fixture_test_client_put(self, app):
         """
         Test PUT request
         """
@@ -88,7 +91,7 @@ class TestDecorator:
         assert resp_json == {"PUT": True}
 
     @pytest.mark.asyncio
-    async def test_fixture_test_client_delete(app):
+    async def test_fixture_test_client_delete(self, app):
         """
         Test DELETE request
         """
@@ -147,7 +150,7 @@ class TestDecorator:
             yield app
 
     @pytest.mark.asyncio
-    async def test_jwt_wrong_token(app):
+    async def test_jwt_wrong_token(self, app):
         """
             Test 'incorrect' JWT token and 'forbidden' response
         """
@@ -164,7 +167,7 @@ class TestDecorator:
         assert resp.status == 422
 
     @pytest.mark.asyncio
-    def test_jwt_correct_token(app):
+    def test_jwt_correct_token(self, app):
         """
             Test 'Correct' JWT token with 'success' response
         """
