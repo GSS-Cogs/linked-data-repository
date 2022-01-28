@@ -53,10 +53,9 @@ class TestDecorator:
         """
         func = Mock(return_value='ok')
         decorated_auth_func = authorised(func)
-        request, resp = app.test_client.get('/')
-        dummy_response = decorated_auth_func(name=request)
-        func.assert_called_with(name='test')
-        assert_equal(dummy_response, 'ok')
+        dummy_request = app.test_client.request
+        dummy_response = decorated_auth_func(dummy_request)
+        assert dummy_response._mock_return_value == 'ok'
 
     @pytest.mark.asyncio
     async def test_fixture_test_client_get(app):
