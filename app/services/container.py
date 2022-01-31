@@ -76,6 +76,4 @@ def configure_services(config: ConfigParser, **service_kwargs) -> (Sanic):
     add_service(config, interfaces.Store, "store", service_kwargs["store"])
 
     # Messenger Services
-    add_service(
-        config, interfaces.Messenger, "messenger", service_kwargs["messenger"]
-    )
+    add_service(config, interfaces.Messenger, "messenger", service_kwargs["messenger"])

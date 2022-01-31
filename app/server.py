@@ -55,10 +55,10 @@ def create_app(
     store: Union[interfaces.Store, str, None] = None,
     messenger: Union[interfaces.Messenger, str, None] = None,
     sanic_test_mode: bool = False,
-    config_path: Union[Path, str] = Path(Path(__file__).parent / "configuration.ini")
+    config_path: Union[Path, str] = Path(Path(__file__).parent / "configuration.ini"),
 ) -> (Sanic):
     """
-    Constructor for configuring the app and dependencies prior to calling the 
+    Constructor for configuring the app and dependencies prior to calling the
     principle app constructor.
     """
     # App config
