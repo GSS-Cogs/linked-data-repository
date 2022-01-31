@@ -12,6 +12,15 @@ from app.utils import get_config
 T = TypeVar("T")
 
 
+class ProtocolError(Exception):
+    """
+    Raised where an implementation does not meet the required protocols.
+    """
+
+    def __init__(self, msg: str):
+        self.msg = msg
+
+
 @inject
 def _boostrap_app(
     config: ConfigParser,
@@ -34,13 +43,14 @@ def _boostrap_app(
     app.ctx.config = config
 
     # Confirm di services match required protocols
-    msg = "{} does not implemented protocol interface {}"
+    msg = "{} does not implemented protocols of {}"
     for service_implemented, service_interface in {
         store: interfaces.Store,
         messenger: interfaces.Messenger,
     }.items():
-        assert isinstance(service_implemented, service_interface), msg.format(
-            service_implemented, service_interface
+        if not isinstance(service_implemented, service_interface):
+            raise ProtocolError(msg.format(
+            service_implemented, service_interface)
         )
 
     # Assign services to app
@@ -58,7 +68,7 @@ def create_app(
     config_path: Union[Path, str] = Path(Path(__file__).parent / "configuration.ini"),
 ) -> (Sanic):
     """
-    Constructor for configuring the app and dependencies prior to calling the
+    Function for configuring the app and dependencies prior to calling the
     principle app constructor.
     """
     # App config
@@ -71,16 +81,14 @@ def create_app(
     # Bootstrap the app
     app = _boostrap_app(config, name, sanic_test_mode=sanic_test_mode)
 
+    @app.route("/")
+    async def home(request):
+        return json({"just some": "holding text"})
+
     return app
 
 
 if __name__ == "__main__":
 
     app = create_app(name="api")
-
-    # TODO - views should probably be attached in their own file(s) to keep things clean.
-    @app.add_route("/")
-    async def home(request):
-        return json({"just some": "holding text"})
-
     app.run(host="0.0.0.0", port=3000, debug=True, access_log=True)

@@ -1,12 +1,15 @@
 from itertools import permutations
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from types import MethodType
 from unittest.mock import Mock
 
 import pytest
 
-from app.server import create_app
+from app.server import create_app, ProtocolError
 from app.services import NopStore
 from app.services.inventory import INVENTORY
+from app.services.container import UnknownImplementationError
 
 FALLEN_THROUGH = "An expected/required exception has failed to be thrown, this code should NEVER trigger"
 
@@ -14,7 +17,7 @@ FALLEN_THROUGH = "An expected/required exception has failed to be thrown, this c
 def test_documentation_example():
     """
     Sanity check that the composable approach to testing
-    with is working as per documentation
+    is working as per documentation
     """
     test_store = Mock
     test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
@@ -22,6 +25,39 @@ def test_documentation_example():
     app = create_app(store=test_store, sanic_test_mode=True)
 
     assert app.ctx.store.get_record() == {"mock": "record"}
+
+
+def test_incorrect_interface_is_raised():
+    """
+    The expected exception is raised if an implementation does not
+    support the required protocols.
+    """
+
+    class WrongUn:
+        pass
+
+    with pytest.raises(ProtocolError):
+        create_app(messenger=WrongUn, sanic_test_mode=True)
+
+
+def test_configurable_implementations():
+    """
+    Implementations can be selected using just the configuration.ini
+    """
+
+    config_path = Path(Path(__file__).parent / "fixtures" / "configuration" / "nop_config.ini")
+    create_app(sanic_test_mode=True, config_path=config_path)
+
+
+def test_bad_config_raises():
+    """
+    Specifying unknown implementations via configuration raises an appropriate
+    exception.
+    """
+
+    config_path = Path(Path(__file__).parent / "fixtures" / "configuration" / "bad_config.ini")
+    with pytest.raises(UnknownImplementationError):
+        create_app(sanic_test_mode=True, config_path=config_path)
 
 
 def test_all_implemntation_combinations_valid():

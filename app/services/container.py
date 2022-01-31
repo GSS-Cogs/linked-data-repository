@@ -16,7 +16,7 @@ class UnknownImplementationError(Exception):
     """
 
     def __init__(self, label: str, service: str):
-        self.msg = f'Implementation "{label}" not found for service: "{service}"'
+        self.msg = f'Implementation "{label}" not found for interface: "{service}"'
 
 
 def add_service(
@@ -38,11 +38,15 @@ def add_service(
         declaration = config[service_label.upper()]["default_implementation"]
 
     # If str not class, get the class from the inventory
-    service = (
-        INVENTORY[service_label][declaration]
-        if isinstance(declaration, str)
-        else declaration
-    )
+
+    try:
+        service = (
+            INVENTORY[service_label][declaration]
+            if isinstance(declaration, str)
+            else declaration
+        )
+    except KeyError:
+        raise UnknownImplementationError(service_label, interface)
 
     if factory:
         di.factories[interface] = lambda x: service(**kwargs)
@@ -52,15 +56,15 @@ def add_service(
 
 def configure_services(config: ConfigParser, **service_kwargs) -> (Sanic):
     """
-    Use the app configuration to bootstrap service implementations.
+    Use configuration to bootstrap service implementations.
 
     --------
     Example:
     --------
 
     # Set some kwargs for a service
-    di["var1"] = app.ctx.config["FOO"]["bar"]
-    di["var2"] = app.ctx.config["BAR"]["foo"]
+    di["var1"] = config["FOO"]["bar"]
+    di["var2"] = config["BAR"]["foo"]
 
     # construct implementations with whatever config it needs
     thingy_kwargs = {"var1": di["var1"], "var2": di["var2"]}
