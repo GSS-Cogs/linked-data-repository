@@ -1,43 +1,75 @@
 from configparser import ConfigParser
+from pathlib import Path
 import random
-from typing import Union
+from typing import Union, TypeVar
 
+from kink import inject
 from sanic import Sanic, json
 
-from app.services.bootstrapper import bootstrap_app
-from app.services import BaseMessenger, BaseStore
+from app.services import interfaces, configure_services
+from app.utils import get_config
 
-# TODO - once merged with a/the pr containing configuration handling,
-# take the default str arguments for services from configuration.
-def create_app(
-    name: str = str("_" + str(random.randint(0, 10000))),
-    store: Union[str, BaseStore] = "Nop",
-    messenger: Union[str, BaseMessenger] = "Nop",
+T = TypeVar("T")
+
+
+@inject
+def _boostrap_app(
+    config: ConfigParser,
+    name: str,
+    store: interfaces.Store,
+    messenger: interfaces.Messenger,
     sanic_test_mode: bool = False,
-    enforce_base_classes: bool = True,
 ) -> (Sanic):
     """
-    Instantiates Sanic application.
-
-    Services can be specified via keyword str arguments that map to
-    service implementation as per app.services.inventory, or by passing
-    in instantiated classes extending the relevant BaseX classes.
+    Bootstraps Sanic application with directly injected services,
+    you should never need to directly pass in any of the interfaces.<X>
+    positional arguments.
 
     :sanic_test_mode:       toggles Sanics default behaviour of caching
                             instanitated app instances.
-    :enforce_base_classes:  disables type check against expected base class
-                            (so mock.Mocks() can be passed in if needed).
     """
 
     Sanic.test_mode = sanic_test_mode
     app = Sanic(name=name)
+    app.ctx.config = config
 
-    # TODO: actual config class and instantiation, there's one in the auth-spike
-    app.config = ConfigParser()
+    # Confirm di services match required protocols
+    msg = "{} does not implemented protocol interface {}"
+    for service_implemented, service_interface in {
+        store: interfaces.Store,
+        messenger: interfaces.Messenger,
+    }.items():
+        assert isinstance(service_implemented, service_interface), msg.format(
+            service_implemented, service_interface
+        )
 
-    # Configure dependency injected services
-    service_kwargs = {"store": store, "messenger": messenger}
-    app = bootstrap_app(app, **service_kwargs)
+    # Assign services to app
+    app.ctx.store = store
+    app.ctx.messenger = messenger
+
+    return app
+
+
+def create_app(
+    name=str("_" + str(random.randint(0, 10000))),
+    store: Union[interfaces.Store, str, None] = None,
+    messenger: Union[interfaces.Messenger, str, None] = None,
+    sanic_test_mode: bool = False,
+    config_path: Union[Path, str] = Path(Path(__file__).parent / "configuration.ini")
+) -> (Sanic):
+    """
+    Constructor for configuring the app and dependencies prior to calling the 
+    principle app constructor.
+    """
+    # App config
+    config = get_config(config_path)
+
+    # Configure di container
+    service_map = {"store": store, "messenger": messenger}
+    configure_services(config, **service_map)
+
+    # Bootstrap the app
+    app = _boostrap_app(config, name, sanic_test_mode=sanic_test_mode)
 
     return app
 

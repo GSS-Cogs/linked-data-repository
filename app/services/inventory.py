@@ -1,4 +1,3 @@
-from .messager.implementations import NopMessager
-from .store.implementations import NopStore
+from . import NopStore, NopMessenger
 
-INVENTORY = {"store": {"Nop": NopStore}, "messager": {"Nop": NopMessager}}
+INVENTORY = {"store": {"Nop": NopStore}, "messenger": {"Nop": NopMessenger}}
