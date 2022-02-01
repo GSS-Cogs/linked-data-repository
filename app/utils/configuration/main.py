@@ -1,4 +1,3 @@
-import base64
 import configparser
 from pathlib import Path
 from typing import Union

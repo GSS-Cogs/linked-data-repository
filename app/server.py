@@ -64,21 +64,25 @@ def create_app(
     store: Union[interfaces.Store, str, None] = None,
     messenger: Union[interfaces.Messenger, str, None] = None,
     sanic_test_mode: bool = False,
-    config_path: Union[Path, str] = Path(Path(__file__).parent / "configuration.ini"),
+    config: Union[Path, str, ConfigParser] = Path(
+        Path(__file__).parent / "configuration.ini"
+    ),
 ) -> (Sanic):
     """
     Function for configuring the app and dependencies prior to calling the
     principle app constructor.
     """
-    # App config
-    config = get_app_config(config_path)
+
+    config_parsed: ConfigParser = (
+        config if isinstance(config, ConfigParser) else get_app_config(config)
+    )
 
     # Configure di container
     implementations_dict = {"store": store, "messenger": messenger}
-    configure_services(config, implementations_dict)
+    configure_services(config_parsed, implementations_dict)
 
     # Bootstrap the app
-    app = _boostrap_app(config, name, sanic_test_mode=sanic_test_mode)
+    app = _boostrap_app(config_parsed, name, sanic_test_mode=sanic_test_mode)
 
     @app.route("/")
     async def home(request):

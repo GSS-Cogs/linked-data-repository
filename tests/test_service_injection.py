@@ -1,7 +1,6 @@
-import copy
+from configparser import ConfigParser
 from itertools import permutations
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from types import MethodType
 from unittest.mock import Mock
 
@@ -45,10 +44,13 @@ def test_configurable_implementations():
     Implementations can be selected using just the configuration.ini
     """
 
-    config_path = Path(
-        Path(__file__).parent / "fixtures" / "configuration" / "nop_config.ini"
-    )
-    create_app(sanic_test_mode=True, config_path=config_path)
+    config = ConfigParser()
+    config.add_section('STORE')
+    config['STORE']['default_implementation'] = 'Nop'
+    config.add_section('MESSENGER')
+    config['MESSENGER']['default_implementation'] = 'Nop'
+
+    create_app(sanic_test_mode=True, config=config)
 
 
 def test_bad_config_raises():
@@ -57,11 +59,14 @@ def test_bad_config_raises():
     exception.
     """
 
-    config_path = Path(
-        Path(__file__).parent / "fixtures" / "configuration" / "bad_config.ini"
-    )
+    config = ConfigParser()
+    config.add_section('STORE')
+    config['STORE']['default_implementation'] = 'I\'m not a thing that exists'
+    config.add_section('MESSENGER')
+    config['MESSENGER']['default_implementation'] = 'Nop'
+
     with pytest.raises(UnknownImplementationError):
-        create_app(sanic_test_mode=True, config_path=config_path)
+        create_app(sanic_test_mode=True, config=config)
 
 
 def test_all_implemntation_combinations_valid():
