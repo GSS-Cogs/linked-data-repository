@@ -45,10 +45,10 @@ def test_configurable_implementations():
     """
 
     config = ConfigParser()
-    config.add_section('STORE')
-    config['STORE']['default_implementation'] = 'Nop'
-    config.add_section('MESSENGER')
-    config['MESSENGER']['default_implementation'] = 'Nop'
+    config.add_section("STORE")
+    config["STORE"]["default_implementation"] = "Nop"
+    config.add_section("MESSENGER")
+    config["MESSENGER"]["default_implementation"] = "Nop"
 
     create_app(sanic_test_mode=True, config=config)
 
@@ -60,10 +60,10 @@ def test_bad_config_raises():
     """
 
     config = ConfigParser()
-    config.add_section('STORE')
-    config['STORE']['default_implementation'] = 'I\'m not a thing that exists'
-    config.add_section('MESSENGER')
-    config['MESSENGER']['default_implementation'] = 'Nop'
+    config.add_section("STORE")
+    config["STORE"]["default_implementation"] = "I'm not a thing that exists"
+    config.add_section("MESSENGER")
+    config["MESSENGER"]["default_implementation"] = "Nop"
 
     with pytest.raises(UnknownImplementationError):
         create_app(sanic_test_mode=True, config=config)
