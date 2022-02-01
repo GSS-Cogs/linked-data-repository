@@ -14,7 +14,7 @@ To run the tests:
 
 * clone this repo
 * `poetry install`
-* `poetry run ./app/server.py`
+* `poetry run ./run.py`
 
 
 ### Upgrading or adding python packages

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Union
 
 
-def get_config(config_path: Union[str, Path]):
+def get_app_config(config_path: Union[str, Path]):
     """
     Returns the basic parsed configuration.ini
     """

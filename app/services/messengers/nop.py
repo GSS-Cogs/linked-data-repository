@@ -1,5 +1,5 @@
 from kink import inject
-from app.services import interfaces
+from .. import interfaces
 
 
 @inject(alias=interfaces.Messenger)

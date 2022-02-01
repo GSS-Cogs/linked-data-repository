@@ -19,42 +19,53 @@ class UnknownImplementationError(Exception):
         self.msg = f'Implementation "{label}" not found for interface: "{service}"'
 
 
-def add_service(
-    config,
-    interface,
-    service_label: str,
-    declaration: Union[str, Type[T], None],
-    factory=False,
-    **kwargs,
-):
+
+class _Specifier:
     """
     di (direct injection containwer) wrapper: allows service instantiation
     from a str name (such as when acquired from the config) and as either a
     singleton or factory.
     """
 
-    # Set default, where None is declared
-    if not declaration:
-        declaration = config[service_label.upper()]["default_implementation"]
+    def __init__(self, config: ConfigParser, implementations: dict):
+        self.config = config
+        self.implementations = implementations
 
-    # If str not class, get the class from the inventory
+    def add_service(
+        self,
+        interface: Union[Type[T], str, None],
+        service_label: str,
+        factory=False,
+        **kwargs,
+    ):
+        """
+        di (direct injection containwer) wrapper: allows service instantiation
+        from a str name (such as when acquired from the config) and as either a
+        singleton or factory.
+        """
 
-    try:
-        service = (
-            INVENTORY[service_label][declaration]
-            if isinstance(declaration, str)
-            else declaration
-        )
-    except KeyError:
-        raise UnknownImplementationError(service_label, interface)
+        declaration = self.implementations[service_label]
 
-    if factory:
-        di.factories[interface] = lambda x: service(**kwargs)
-    else:
-        di[interface] = service(**kwargs)
+        # Set default, where None is declared
+        if not declaration:
+            declaration = self.config[service_label.upper()]["default_implementation"]
+
+        # If str not class, get the class from the inventory
+        try:
+            if isinstance(declaration, str):
+                service = INVENTORY[service_label][declaration]
+            else:
+                service = declaration
+        except KeyError:
+            raise UnknownImplementationError(service_label, interface)
+
+        if factory:
+            di.factories[interface] = lambda x: service(**kwargs)
+        else:
+            di[interface] = service(**kwargs)
 
 
-def configure_services(config: ConfigParser, **service_kwargs) -> (Sanic):
+def configure_services(config: ConfigParser, implementations: dict):
     """
     Use configuration to bootstrap service implementations.
 
@@ -69,15 +80,13 @@ def configure_services(config: ConfigParser, **service_kwargs) -> (Sanic):
     # construct implementations with whatever config it needs
     thingy_kwargs = {"var1": di["var1"], "var2": di["var2"]}
     add_service(di, config, InterfaceOfThing, thing_label, service_as_passed_in, factory=True/False, **thingy_kwargs)
-
-    TODO: example is confusing, do we need so pass those kwargs to
-    # the di before the implementation? Try it and find out.
     """
 
     di.clear_cache()
+    s = _Specifier(config, implementations)
 
     # Store Services
-    add_service(config, interfaces.Store, "store", service_kwargs["store"])
+    s.add_service(interfaces.Store, "store")
 
     # Messenger Services
-    add_service(config, interfaces.Messenger, "messenger", service_kwargs["messenger"])
+    s.add_service(interfaces.Messenger, "messenger")

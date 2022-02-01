@@ -7,7 +7,8 @@ from kink import inject
 from sanic import Sanic, json
 
 from app.services import interfaces, configure_services
-from app.utils import get_config
+from app.utils import get_app_config
+
 
 T = TypeVar("T")
 
@@ -31,7 +32,7 @@ def _boostrap_app(
 ) -> (Sanic):
     """
     Bootstraps Sanic application with directly injected services,
-    you should never need to directly pass in any of the interfaces.<X>
+    you should never need to directly satisfy any of the interfaces.<X>
     positional arguments.
 
     :sanic_test_mode:       toggles Sanics default behaviour of caching
@@ -72,11 +73,11 @@ def create_app(
     principle app constructor.
     """
     # App config
-    config = get_config(config_path)
+    config = get_app_config(config_path)
 
     # Configure di container
-    service_map = {"store": store, "messenger": messenger}
-    configure_services(config, **service_map)
+    implementations_dict = {"store": store, "messenger": messenger}
+    configure_services(config, implementations_dict)
 
     # Bootstrap the app
     app = _boostrap_app(config, name, sanic_test_mode=sanic_test_mode)
@@ -86,9 +87,3 @@ def create_app(
         return json({"just some": "holding text"})
 
     return app
-
-
-if __name__ == "__main__":
-
-    app = create_app(name="api")
-    app.run(host="0.0.0.0", port=3000, debug=True, access_log=True)
