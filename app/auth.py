@@ -6,30 +6,30 @@ from authlib.integrations.requests_client import OAuth2Session
 import requests
 from sanic.request import Request
 
-from utils import AuthConfig
+from app.utils import AuthConfig
+
 
 class Auth:
     """
     A thing to handle the encryption and decryption of an auth related cookie,
     also holds associated authentication and authorization methods.
     """
-    
+
     def __init__(self, cfg: AuthConfig, request: Request, logger):
         self.cfg = cfg
         self.logger = logger
         self.request = request
 
         self.client = OAuth2Session(
-            self.cfg.client_id,
-            self.cfg.client_secret,
+            self.cfg.get('client_id', None),
+            self.cfg('client_secret', None),
             scope='openid',
-            redirect_uri=self.cfg.redirect_uri
+            redirect_uri=self.cfg.get('redirect_uri', None)
         )
 
         self.cookie = request.cookies.get('user', None)
         if not self.cookie:
             self.pristine()
-
 
     def encrypt_cookie(self, sub_dict):
         """
@@ -42,21 +42,21 @@ class Auth:
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(
                     days=0,
                     hours=0,
-                    minutes=self.cfg.expiry_minutes
-                    ),
+                    minutes=self.cfg.get('expiry_minutes', None)
+                ),
                 'iat': datetime.datetime.utcnow(),
                 'sub': sub_dict
             }
             self.cookie = jwt.encode(
                 payload,
-                self.cfg.encryption_key,
-                algorithm=self.cfg.algorithm
+                self.cfg.get('encryption_key', None),
+                algorithm=self.cfg.get('algorithm', None)
             )
         except Exception as err:
-            self.logger.error(f'Failed to encrypt cookie with exception:\n {err}'
+            self.logger.error(
+                f'Failed to encrypt cookie with exception:\n {err}'
                 '\n Payload was {payload}')
             raise err
-
 
     def decrypt_cookie(self, time_stamps: bool = False) -> (dict):
         """
@@ -69,9 +69,12 @@ class Auth:
         If time_stamps = True we return whole cookie, otherwiswe just ["sub"]
         """
         try:
-            payload = jwt.decode(self.cookie, self.cfg.encryption_key, algorithms=self.cfg.algorithm)
+            payload = jwt.decode(
+                self.cookie,
+                self.cfg.encryption_key,
+                algorithms=self.cfg.algorithm)
             if not time_stamps:
-                payload = payload['sub']
+                payload = payload.get('sub', None)
             return payload
 
         except jwt.ExpiredSignatureError as err:
@@ -83,7 +86,6 @@ class Auth:
             # TODO - handle this properly
             raise err
 
-
     def set(self, key, value):
         """
         Set a single field in the .cookie["sub"] dict
@@ -91,7 +93,6 @@ class Auth:
         sub_dict = self.decrypt_cookie()
         sub_dict[key] = value
         self.encrypt_cookie(sub_dict)
-
 
     def get(self, key):
         """
@@ -101,9 +102,9 @@ class Auth:
             sub_dict = self.decrypt_cookie()
             return sub_dict.get(key, None)
         except KeyError:
-            self.logger.warning(f'Unable to find key "{key}" in cookie. Got {sub_dict.keys()}')
+            self.logger.warning(
+                f'Unable to find key "{key}" in cookie. Got {sub_dict.keys()}')
             return None
-
 
     def remove(self, key):
         """
@@ -111,19 +112,19 @@ class Auth:
         """
         sub_dict = self.decrypt_cookie()
         if not sub_dict.pop(key, None):
-            self.logger.warning(f'Called Auth.remove() for field "{key}" but no '
+            self.logger.warning(
+                f'Called Auth.remove() for field "{key}" but no '
                 'such field existed in the ["sub"] dict')
         self.encrypt_cookie(sub_dict)
-
 
     def get_auth_uri(self):
         """
         Get the authentication url, also sets state against .cookie["sub"]["state"]
         """
-        uri, state = self.client.create_authorization_url(self.cfg.authorize_url)
+        uri, state = self.client.create_authorization_url(
+            self.cfg.authorize_url)
         self.set("state", state)
         return uri
-
 
     def get_access_token(self):
         """
@@ -132,7 +133,6 @@ class Auth:
         token_dict = self.get_token()
         return token_dict["access_token"]
 
-
     def set_access_token(self):
         """
         Gets and then sets an access_token against .cookie["sub"]["access_token"]
@@ -140,15 +140,15 @@ class Auth:
         access_token = self.get_access_token()
         self.set("access_token", access_token)
 
-
     # TODO - we might be able to use some of the "id_token" information for security,
-    # for example: check intended recipient, I _think_ it should match 
+    # for example: check intended recipient, I _think_ it should match
     # self.cfg.client_id)
+
     def get_token(self) -> (dict):
         """
         Gets the token(s) response from auth0, example:
-        
-        {   
+
+        {
             'access_token': <str>
             'id_token': <str>,
             'scope': 'openid',
@@ -162,10 +162,10 @@ class Auth:
         if not state:
             # TODO - handle this properly
             raise Exception('Callback url should contain a "state" param')
-      
+
         # Confirm auth server returned state matches initial
         # state (guard against CSRF attacks)
-        # TODO - what do we do if it doesen't?        
+        # TODO - what do we do if it doesen't?
         assert state == self.get("state")
 
         # Don't linger state once it's served its purpose
@@ -175,24 +175,26 @@ class Auth:
             self.cfg.access_token_url,
             authorization_response=self.request.url)
 
-
     def logout(self):
         """
         Logs the user out via auth0 api.
-        
+
         If that is successful, also removes the users token from
         the cookie.
         """
 
-        r = requests.get(self.cfg.logout_url, headers = {"client_id": self.cfg.client_id})
+        r = requests.get(
+            self.cfg.logout_url, headers={
+                "client_id": self.cfg.client_id})
         if r.status_code != 200:
-            self.logger.warning(f'Logout failed at {self.cfg.logout_url} with status code {r.status_code}')
+            self.logger.warning(
+                f'Logout failed at {self.cfg.logout_url} with status code {r.status_code}')
         else:
             self.remove("access_token")
 
-
     # TODO - in production this should be more generic, look for _something_
     # in _some_ namespace. The equivient of _has_role() should just wrap that.
+
     def _has_role(self, role) -> (bool):
         """
         Given the access token from the cookie, does the user in question have
@@ -212,7 +214,7 @@ class Auth:
             # TODO - handle this properly
             raise NotImplementedError('Logout url not working')
         self.logger.debug(f'Logout got status code {r.status_code}')
-        
+
         user_info = r.json()
 
         # User has authenticated, but has no assigned roles
@@ -220,7 +222,6 @@ class Auth:
             return False
 
         return role in user_info[self.cfg.roles_namespace]
-
 
     def has_admin(self) -> (bool):
         """
@@ -230,10 +231,8 @@ class Auth:
         """
         return self._has_role("admin")
 
-
     def pristine(self):
         """
         Resets to a pristine (empty other than time stamps) cookie
         """
         self.encrypt_cookie({})
-
