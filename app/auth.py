@@ -19,10 +19,10 @@ class Auth:
         self.cfg = cfg
         self.logger = logger
         self.request = request
-
+   
         self.client = OAuth2Session(
             self.cfg.get('client_id', None),
-            self.cfg('client_secret', None),
+            self.cfg.get('client_secret', None),
             scope='openid',
             redirect_uri=self.cfg.get('redirect_uri', None)
         )
