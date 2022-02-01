@@ -31,7 +31,7 @@ def test_documentation_example():
     test_store = Mock
     test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
 
-    app = create_app(store=test_store, sanic_test_mode=True, config=nop_config)
+    app = create_app(store=test_store, messenger='Nop', sanic_test_mode=True)
 
     assert app.ctx.store.get_record() == {"mock": "record"}
 

@@ -6,16 +6,14 @@ from kink import di
 from . import interfaces
 from .inventory import INVENTORY
 
-T = TypeVar("T")
-
 
 class UnknownImplementationError(Exception):
     """
     Raised where we are specifying an unknown implementation.
     """
 
-    def __init__(self, label: str, service: str):
-        self.msg = f'Implementation "{label}" not found for interface: "{service}"'
+    def __init__(self, service: str, label: str):
+        self.msg = f'Implementation "{label}" not found for service: "{service}"'
 
 
 class _Specifier:
@@ -31,13 +29,13 @@ class _Specifier:
 
     def add_service(
         self,
-        interface: T,
+        interface: Type,
         service_label: str,
         factory=False,
         **kwargs,
     ):
         """
-        di (direct injection containwer) wrapper: allows service instantiation
+        di (direct injection container) wrapper: allows service instantiation
         from a str name (such as when acquired from the config) and as either a
         singleton or factory.
         """
@@ -55,7 +53,7 @@ class _Specifier:
             else:
                 service = declaration
         except KeyError:
-            raise UnknownImplementationError(service_label, interface)
+            raise UnknownImplementationError(service_label, declaration)
 
         if factory:
             di.factories[interface] = lambda x: service(**kwargs)
