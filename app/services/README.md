@@ -50,4 +50,4 @@ def test_for_getting_a_record():
 
 In the above example, the kwarg `sanic_test_mode = True` disables Sanic automated caching of every instantiated app (this can lead to namespace clashes, so is recommended for tests).  
 
-**Please note:** If you don't pass a keyord in for a service if defaults to `None` and uses whatever is specified as the default via the apps configuration - which means a configuration change could potentially change test behaviour. Therefore while testing always either (a) explicitly specify each service handler as per the above or (b) pass in an appropriate `configparser.ConfigParser()` object (i.e include a configuration fixture in your test setup).
+**Please note:** If you don't pass a keyword in for a service if defaults to `None` and uses whatever is specified as the default via the apps configuration - which means a configuration change could potentially change test behaviour. Therefore while testing always either (a) explicitly specify each service handler as per the above or (b) pass in an appropriate `configparser.ConfigParser()` object (i.e include a configuration fixture in your test setup).

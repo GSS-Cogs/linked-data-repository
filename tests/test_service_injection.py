@@ -10,6 +10,20 @@ from app.services.inventory import INVENTORY
 from app.services.container import UnknownImplementationError
 
 
+nop_config = ConfigParser()
+nop_config.add_section("STORE")
+nop_config["STORE"]["default_implementation"] = "Nop"
+nop_config.add_section("MESSENGER")
+nop_config["MESSENGER"]["default_implementation"] = "Nop"
+
+
+def test_configurable_implementations():
+    """
+    Implementations can be selected using just the configuration.ini
+    """
+    create_app(sanic_test_mode=True, config=nop_config)
+
+
 def test_documentation_example():
     """
     Sanity check that the documented test example works
@@ -17,7 +31,7 @@ def test_documentation_example():
     test_store = Mock
     test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
 
-    app = create_app(store=test_store, messenger='Nop', sanic_test_mode=True)
+    app = create_app(store=test_store, sanic_test_mode=True, config=nop_config)
 
     assert app.ctx.store.get_record() == {"mock": "record"}
 
@@ -32,21 +46,7 @@ def test_incorrect_interface_is_raised():
         pass
 
     with pytest.raises(ProtocolError):
-        create_app(messenger=WrongUn, sanic_test_mode=True)
-
-
-def test_configurable_implementations():
-    """
-    Implementations can be selected using just the configuration.ini
-    """
-
-    config = ConfigParser()
-    config.add_section("STORE")
-    config["STORE"]["default_implementation"] = "Nop"
-    config.add_section("MESSENGER")
-    config["MESSENGER"]["default_implementation"] = "Nop"
-
-    create_app(sanic_test_mode=True, config=config)
+        create_app(messenger=WrongUn, sanic_test_mode=True, config=nop_config)
 
 
 def test_bad_config_raises():
@@ -55,11 +55,8 @@ def test_bad_config_raises():
     exception.
     """
 
-    config = ConfigParser()
-    config.add_section("STORE")
+    config = nop_config
     config["STORE"]["default_implementation"] = "I'm not a thing that exists"
-    config.add_section("MESSENGER")
-    config["MESSENGER"]["default_implementation"] = "Nop"
 
     with pytest.raises(UnknownImplementationError):
         create_app(sanic_test_mode=True, config=config)
