@@ -18,7 +18,7 @@ Service interfaces are secured using the python `Protocol` class, you can add ne
 * Create relevant interface in `app/interfaces`.
 * Create implementation(s) inside the `services` module - this _should_ always include a `Nop` (non operational) handler - see `app/services/store/nop.py` for an example.
 * Inject an alias to the appropriate interface for each new handler, this enables runtime type checking, the decorator pattern will look something like `@inject(alias=interfaces.MyNewInterface)`.
-* Create an entry for you new service in the configuration.
+* Create an entry for your new service in the configuration.
 * Define how your handler(s) use this configuration in `app/services/container`.
 * Add your new app to the constrcutors for `create_app` and `_bootstrap_app` in `app/server.py`.
 * Expand tests to cover newly implemented functionality.
@@ -50,4 +50,4 @@ def test_for_getting_a_record():
 
 In the above example, the kwarg `sanic_test_mode = True` disables Sanic automated caching of every instantiated app (this can lead to namespace clashes, so is recommended for tests).  
 
-**Please note:** If you don't pass a keyword in for a service if defaults to `None` and uses whatever is specified as the default via the apps configuration - which means a configuration change could potentially change test behaviour. Therefore while testing always either (a) explicitly specify each service handler as per the above or (b) pass in an appropriate `configparser.ConfigParser()` object (i.e include a configuration fixture in your test setup).
+**Please note:** If you don't pass a keyword in for a service it defaults to `None` and uses whatever is specified as the default via the apps configuration - which means a configuration change could potentially change test behaviour. Therefore while testing always either (a) explicitly specify each service handler as per the above or (b) pass in an appropriate `configparser.ConfigParser()` object (i.e include a configuration fixture in your test setup).
