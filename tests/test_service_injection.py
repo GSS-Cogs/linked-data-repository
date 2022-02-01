@@ -1,3 +1,4 @@
+import copy
 from configparser import ConfigParser
 from itertools import permutations
 from types import MethodType
@@ -55,7 +56,7 @@ def test_bad_config_raises():
     exception.
     """
 
-    config = nop_config
+    config = copy.deepcopy(nop_config)
     config["STORE"]["default_implementation"] = "I'm not a thing that exists"
 
     with pytest.raises(UnknownImplementationError):
