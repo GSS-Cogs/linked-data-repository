@@ -1,33 +1,28 @@
 
 ## Services
 
-We've implemented a simple composable pattern for interacting with dependent services (databases, message queues etc) for this app. This approach revolves around using `create_app` from [server.py](https://github.com/GSS-Cogs/linked-data-repository/tree/app/server.py) with dynamic runtime arguments.
+When you `create_app`, the implementation you wish to be injected will be specified in one of following ways:
 
-When you `create_app` the kwargs provided will define which of the service implementations (see `app/services/<name-of-thing>/implementations/*`) are used.
+* Classes will be directly passed in (mainly for testing, i.e `Mock()`, see example).
+* A str that maps to a known implementation via `app.services.inventory.INVENTORY`
+* None (don't specify). This will tell the app to take the str choice as defined in configuration.ini.
+* You can also pass a `configparser.ConfigParser` instance directly to the `create_app` constructor should you need to (again, this is mainly for tests).
 
-The approach allows:
+The principle benefit is to retain flexibility to work with an MVP "good enough for now" or develoment only services, easily swapping to production ready (or generally better) services as and when we need/want to.
 
-* Easy use of stubs and/or changing of service implementation during development.
-* Easy implemented composable tests.
-
-Services can be specified to `create_app` as:
-* Instantiated objects (for example, when creating test mocks)
-* A string label mapping to a implementation as defined in the [inventory](https://github.com/GSS-Cogs/linked-data-repository/tree/app/services/inventory.py) (so defaults can be specified and/or changed via config).
-
-The principle benefit is you can start any branch of work with an MVP "good enough for now" service and easily swap in a production ready service at a later date without making any application level code changes. 
 
 ### Adding a new service
 
-All services used by this app are created in the same way:
+Service interfaces are secured using the python `Protocol` class, you can add new ones with the following steps.
 
-* Create relevant base class as `app/services/<name of new service>/base.py`
-* At least one implemenation in `app/services/<name of new service>/implementations/<name>.py`
-* Create a text to implementation mapping dict in `app/services/inventory.py`
-* Add a constructor in `app/services/composer.py` (see `store` and `messager` for examples).
-* Add your new service to the `create_app` constructor as defined in [server.py](https://github.com/GSS-Cogs/linked-data-repository/tree/app/server.py).
+* Create relevant interface in `app/interfaces`.
+* Create implementation(s) inside the `services` module - this _should_ always include a `Nop` (non operational) handler - see `app/services/store/nop.py` for an example.
+* Inject an alias to the appropriate interface for each new handler, this enables runtime type checking, the decorator pattern will look something like `@inject(alias=interfaces.MyNewInterface)`.
+* Create an entry for you new service in the configuration.
+* Define how your handler(s) use this configuration in `app/services/container`.
+* Add your new app to the constrcutors for `create_app` and `_bootstrap_app` in `app/server.py`.
+* Expand tests to cover newly implemented functionality.
 
-
-**IMPORTANT:** Always include a Nop (Not Operational) implementation.
 
 ### Testing
 
@@ -45,7 +40,7 @@ def test_for_getting_a_record():
     test_store = Mock
     test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
 
-    app = create_app(store=test_store, sanic_test_mode=True)
+    app = create_app(store=test_store, messenger='Nop', sanic_test_mode=True)
 
     assert app.ctx.store.get_record() == {"mock": "record"}
 
@@ -54,3 +49,5 @@ def test_for_getting_a_record():
 ```
 
 In the above example, the kwarg `sanic_test_mode = True` disables Sanic automated caching of every instantiated app (this can lead to namespace clashes, so is recommended for tests).  
+
+**Please note:** If you don't pass a keyord in for a service if defaults to `None` and uses whatever is specified as the default via the apps configuration - which means a configuration change could potentially change test behaviour. Therefore while testing always either (a) explicitly specify each service handler as per the above or (b) pass in an appropriate `configparser.ConfigParser()` object (i.e include a configuration fixture in your test setup).

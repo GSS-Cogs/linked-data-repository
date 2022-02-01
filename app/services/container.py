@@ -31,7 +31,7 @@ class _Specifier:
 
     def add_service(
         self,
-        interface: Union[Type[T], str, None],
+        interface: T,
         service_label: str,
         factory=False,
         **kwargs,
@@ -77,7 +77,7 @@ def configure_services(config: ConfigParser, implementations: dict):
 
     # construct implementations with whatever config it needs
     thingy_kwargs = {"var1": di["var1"], "var2": di["var2"]}
-    add_service(di, config, InterfaceOfThing, thing_label, service_as_passed_in, factory=True/False, **thingy_kwargs)
+    add_service(InterfaceOfThingy, thingy_label, factory=True/False, **thingy_kwargs)
     """
 
     di.clear_cache()

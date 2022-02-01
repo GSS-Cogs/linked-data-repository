@@ -8,7 +8,7 @@ def get_app_config(config_path: Union[str, Path]):
     Returns the basic parsed configuration.ini
     """
     if not isinstance(config_path, (str, Path)):
-        raise ValueError("get_config requires an argument of type Path or str")
+        raise ValueError("get_app_config requires an argument of type Path or str")
 
     if isinstance(config_path, str):
         config_path = Path(config_path)

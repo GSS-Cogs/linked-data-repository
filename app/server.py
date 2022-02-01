@@ -1,16 +1,13 @@
 from configparser import ConfigParser
 from pathlib import Path
 import random
-from typing import Union, TypeVar
+from typing import Union
 
 from kink import inject
 from sanic import Sanic, json
 
 from app.services import interfaces, configure_services
 from app.utils import get_app_config
-
-
-T = TypeVar("T")
 
 
 class ProtocolError(Exception):

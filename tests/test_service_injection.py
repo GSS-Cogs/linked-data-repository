@@ -1,6 +1,5 @@
 from configparser import ConfigParser
 from itertools import permutations
-from pathlib import Path
 from types import MethodType
 from unittest.mock import Mock
 
@@ -10,18 +9,15 @@ from app.server import create_app, ProtocolError
 from app.services.inventory import INVENTORY
 from app.services.container import UnknownImplementationError
 
-FALLEN_THROUGH = "An expected/required exception has failed to be thrown, this code should NEVER trigger"
-
 
 def test_documentation_example():
     """
-    Sanity check that the composable approach to testing
-    is working as per documentation
+    Sanity check that the documented test example works
     """
     test_store = Mock
     test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
 
-    app = create_app(store=test_store, sanic_test_mode=True)
+    app = create_app(store=test_store, messenger='Nop', sanic_test_mode=True)
 
     assert app.ctx.store.get_record() == {"mock": "record"}
 
@@ -72,7 +68,8 @@ def test_bad_config_raises():
 def test_all_implemntation_combinations_valid():
     """
     Test that the app can be instantiated with
-    all combinations of currently defined implementations.
+    all combinations implementations as defined
+    in app.services.inventory.INVENTORY.
     """
 
     all_permutations = permutations(
