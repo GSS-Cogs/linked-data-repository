@@ -1,3 +1,4 @@
+import copy
 from itertools import permutations
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -7,7 +8,6 @@ from unittest.mock import Mock
 import pytest
 
 from app.server import create_app, ProtocolError
-from app.services import NopStore
 from app.services.inventory import INVENTORY
 from app.services.container import UnknownImplementationError
 
@@ -45,7 +45,9 @@ def test_configurable_implementations():
     Implementations can be selected using just the configuration.ini
     """
 
-    config_path = Path(Path(__file__).parent / "fixtures" / "configuration" / "nop_config.ini")
+    config_path = Path(
+        Path(__file__).parent / "fixtures" / "configuration" / "nop_config.ini"
+    )
     create_app(sanic_test_mode=True, config_path=config_path)
 
 
@@ -55,7 +57,9 @@ def test_bad_config_raises():
     exception.
     """
 
-    config_path = Path(Path(__file__).parent / "fixtures" / "configuration" / "bad_config.ini")
+    config_path = Path(
+        Path(__file__).parent / "fixtures" / "configuration" / "bad_config.ini"
+    )
     with pytest.raises(UnknownImplementationError):
         create_app(sanic_test_mode=True, config_path=config_path)
 

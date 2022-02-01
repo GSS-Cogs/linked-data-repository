@@ -2,7 +2,6 @@ from configparser import ConfigParser
 from typing import Type, TypeVar, Union
 
 from kink import di
-from sanic import Sanic
 
 from . import interfaces
 from .inventory import INVENTORY
@@ -17,7 +16,6 @@ class UnknownImplementationError(Exception):
 
     def __init__(self, label: str, service: str):
         self.msg = f'Implementation "{label}" not found for interface: "{service}"'
-
 
 
 class _Specifier:

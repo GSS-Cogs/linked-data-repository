@@ -42,18 +42,15 @@ def test_for_getting_a_record():
     Hyperthetical test where our app needs to get a record from the "Store"
     to test some other piece of fuctionality.
     """
-    test_store = NopStore()
-    test_store.get_record = lambda: {"mock": "record"}
+    test_store = Mock
+    test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
 
-    app = create_app(
-        store=test_store,
-        sanic_test_mode = True
-        )
+    app = create_app(store=test_store, sanic_test_mode=True)
+
+    assert app.ctx.store.get_record() == {"mock": "record"}
 
     # do your test
 
 ```
 
 In the above example, the kwarg `sanic_test_mode = True` disables Sanic automated caching of every instantiated app (this can lead to namespace clashes, so is recommended for tests).  
-
-**Troubleshooting** - Should you encounter issues with the above outlined `Nop` approach, you can instantiate a `unittest.mock.Mock()` class and pass it in instead, however you'll need to include the keyword `enforce_base_classes = False` in the `create_app` constructor (otherwise you'll get exceptions as `mock.Mock()` would not extend the base class in question).

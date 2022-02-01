@@ -50,9 +50,7 @@ def _boostrap_app(
         messenger: interfaces.Messenger,
     }.items():
         if not isinstance(service_implemented, service_interface):
-            raise ProtocolError(msg.format(
-            service_implemented, service_interface)
-        )
+            raise ProtocolError(msg.format(service_implemented, service_interface))
 
     # Assign services to app
     app.ctx.store = store
