@@ -30,7 +30,6 @@ Service interfaces are secured using the python `Protocol` class, you can add ne
 ```python
 
 from app.server import create_app
-from app.service.store import NopStore
 
 def test_for_getting_a_record():
     """
