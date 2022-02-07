@@ -1,7 +1,6 @@
 from sanic import Sanic
 import pytest
 import random
-from unittest.mock import Mock
 
 from app.utils import auth, AuthManager
 

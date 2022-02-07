@@ -8,6 +8,7 @@ authors = ["mikeAdamss <mikelovesbooks@gmail.com>"]
 python = "^3.9"
 sanic = "^21.12.1"
 PyJWT = "^2.3.0"
+requests = "^2.27.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
