@@ -1,6 +1,6 @@
 from functools import wraps
 from sanic.response import redirect
-from handlers import Handler
+from .handlers import ExceptionHandler
 
 
 def authorised(func):
