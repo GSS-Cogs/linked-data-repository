@@ -58,8 +58,8 @@ def auth(
                 # granular control within the endpoint handler
                 return function(auth, *args, **kwargs)
 
-            # Where roles we're provided, this response will
-            # eiother be allowed or not
+            # Where roles were provided, this response will
+            # either be allowed or not
 
             if not allowed:
                 if redirect_to:
