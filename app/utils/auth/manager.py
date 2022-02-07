@@ -26,7 +26,7 @@ class AuthManager:
             redirect_uri=self.cfg.redirect_uri,
         )
 
-        self.cookie = request.cookies.get('user', None)
+        self.cookie = request.cookies.get("user", None)
         if not self.cookie:
             self.pristine()
 
@@ -39,9 +39,7 @@ class AuthManager:
         try:
             payload = {
                 "exp": datetime.datetime.utcnow()
-                + datetime.timedelta(
-                    days=0, hours=0, minutes=self.cfg.expiry_minutes
-                ),
+                + datetime.timedelta(days=0, hours=0, minutes=self.cfg.expiry_minutes),
                 "iat": datetime.datetime.utcnow(),
                 "sub": sub_dict,
             }

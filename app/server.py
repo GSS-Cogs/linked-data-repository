@@ -10,7 +10,8 @@ from app.utils.configuration import config
 app = Sanic(name="backend")
 app.ctx.cfg = config
 
-@app.route('/')
+
+@app.route("/")
 async def home(request: Request):
     return text("home endpoint that doesn't really do anything")
 
