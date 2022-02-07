@@ -16,6 +16,15 @@ class UnknownImplementationError(Exception):
         self.msg = f'Implementation "{label}" not found for service: "{service}"'
 
 
+class ProtocolError(Exception):
+    """
+    Raised where an implementation does not meet the required protocols.
+    """
+
+    def __init__(self, msg):
+        self.msg = msg
+
+
 class _Specifier:
     """
     di (direct injection containwer) wrapper: allows service instantiation
@@ -55,12 +64,15 @@ class _Specifier:
         except KeyError:
             raise UnknownImplementationError(service_label, declaration)
 
+        msg = "{} does not implemented protocols of {}"
+        if not isinstance(service, interface):
+                raise ProtocolError(msg.format(service, interface))
+
         if factory:
             di.factories[interface] = lambda x: service(**kwargs)
         else:
             di[interface] = service(**kwargs)
-
-
+        
 def configure_services(config: ConfigParser, implementations: dict):
     """
     Use configuration to bootstrap service implementations.

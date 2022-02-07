@@ -6,25 +6,13 @@ from typing import Union
 from kink import inject
 from sanic import Sanic, json
 
-from app.services import interfaces, configure_services
+from app.services import interfaces, configure_services, GetStore, GetMessenger
 from app.utils import get_app_config
 
 
-class ProtocolError(Exception):
-    """
-    Raised where an implementation does not meet the required protocols.
-    """
-
-    def __init__(self, msg: str):
-        self.msg = msg
-
-
-@inject
 def _boostrap_app(
     config: ConfigParser,
     name: str,
-    store: interfaces.Store,
-    messenger: interfaces.Messenger,
     sanic_test_mode: bool = False,
 ) -> (Sanic):
     """
@@ -39,19 +27,6 @@ def _boostrap_app(
     Sanic.test_mode = sanic_test_mode
     app = Sanic(name=name)
     app.ctx.config = config
-
-    # Confirm di services match required protocols
-    msg = "{} does not implemented protocols of {}"
-    for service_implemented, service_interface in {
-        store: interfaces.Store,
-        messenger: interfaces.Messenger,
-    }.items():
-        if not isinstance(service_implemented, service_interface):
-            raise ProtocolError(msg.format(service_implemented, service_interface))
-
-    # Assign services to app
-    app.ctx.store = store
-    app.ctx.messenger = messenger
 
     return app
 
@@ -82,7 +57,8 @@ def create_app(
     app = _boostrap_app(config_parsed, name, sanic_test_mode=sanic_test_mode)
 
     @app.route("/")
-    async def home(request):
-        return json({"just some": "holding text"})
+    @inject
+    async def home(request, store: interfaces.Messenger):
+        return json({"store is": str(type(store))})
 
     return app

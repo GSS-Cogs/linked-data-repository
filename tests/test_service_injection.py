@@ -2,13 +2,14 @@ import copy
 from configparser import ConfigParser
 from itertools import permutations
 from types import MethodType
-from unittest.mock import Mock
 
+from kink import inject
 import pytest
 
-from app.server import create_app, ProtocolError
+from app.server import create_app
+from app.services import NopStore, NopMessenger, interfaces
 from app.services.inventory import INVENTORY
-from app.services.container import UnknownImplementationError
+from app.services.container import ProtocolError, UnknownImplementationError
 
 
 nop_config = ConfigParser()
@@ -18,23 +19,26 @@ nop_config.add_section("MESSENGER")
 nop_config["MESSENGER"]["default_implementation"] = "Nop"
 
 
+def test_documentation_example():
+    """
+    Sanity check that the documented test example works
+    """
+
+    test_store = NopMessenger
+    test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
+
+    @inject
+    def fake_endpoint(store: interfaces.Store):
+        return store.get_record()
+
+    assert fake_endpoint() == {"mock": "record"}
+
+
 def test_configurable_implementations():
     """
     Implementations can be selected using just the configuration.ini
     """
     create_app(sanic_test_mode=True, config=nop_config)
-
-
-def test_documentation_example():
-    """
-    Sanity check that the documented test example works
-    """
-    test_store = Mock
-    test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
-
-    app = create_app(store=test_store, messenger='Nop', sanic_test_mode=True)
-
-    assert app.ctx.store.get_record() == {"mock": "record"}
 
 
 def test_incorrect_interface_is_raised():
