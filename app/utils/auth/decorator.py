@@ -20,12 +20,12 @@ def auth(
     """
     Authorization decorator
 
-    requires_all: a tuple of roles, a use must have ALL the roles to access the decorated resource
-    requeres_one_of: a tuple of roles, a use must have ONE (or more) of the roles to access the decorated
+    requires_all: a list of roles, a use must have ALL the roles to access the decorated resource
+    requeres_one_of: a list of roles, a use must have ONE (or more) of the roles to access the decorated
     resource.
     redirect_to: a uri the user will be redirected to if not authorised.
     authoriser: specify the the authorising class being used, for testing purposes.
-    auth_config: sprcify the auth configuration used, for testing purposes.
+    auth_config: specify the auth configuration used, for testing purposes.
     """
 
     def decorator(function):

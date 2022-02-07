@@ -48,3 +48,4 @@ class TestDecorator:
         Endpoint gives a response but that response varies based
         on auth - this is the has no auth scenario.
         """
+        ...
