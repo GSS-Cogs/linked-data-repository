@@ -2,29 +2,28 @@ import datetime
 import jwt
 
 from authlib.integrations.requests_client import OAuth2Session
-# TODO - is there a built-in sanic.request GET handler? seems likely
 import requests
 from sanic.request import Request
 
-from app.utils import AuthConfig
+from .configuration import AuthConfig
 
 
-class Auth:
+class AuthManager:
     """
-    A thing to handle the encryption and decryption of an auth related cookie,
-    also holds associated authentication and authorization methods.
+    The principle class that handles the encryption and decryption of an auth related
+    cookie, also holds associated authentication and authorization methods.
     """
 
     def __init__(self, cfg: AuthConfig, request: Request, logger):
         self.cfg = cfg
         self.logger = logger
         self.request = request
-   
+
         self.client = OAuth2Session(
-            self.cfg.get('client_id', None),
-            self.cfg.get('client_secret', None),
-            scope='openid',
-            redirect_uri=self.cfg.get('redirect_uri', None)
+            self.cfg.client_id,
+            self.cfg.client_secret,
+            scope="openid",
+            redirect_uri=self.cfg.redirect_uri,
         )
 
         self.cookie = request.cookies.get('user', None)
@@ -39,23 +38,23 @@ class Auth:
 
         try:
             payload = {
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(
-                    days=0,
-                    hours=0,
-                    minutes=self.cfg.get('expiry_minutes', None)
+                "exp": datetime.datetime.utcnow()
+                + datetime.timedelta(
+                    days=0, hours=0, minutes=self.cfg.expiry_minutes
                 ),
-                'iat': datetime.datetime.utcnow(),
-                'sub': sub_dict
+                "iat": datetime.datetime.utcnow(),
+                "sub": sub_dict,
             }
             self.cookie = jwt.encode(
                 payload,
-                self.cfg.get('encryption_key', None),
-                algorithm=self.cfg.get('algorithm', None)
+                self.cfg.encryption_key,
+                algorithm=self.cfg.algorithm,
             )
         except Exception as err:
             self.logger.error(
-                f'Failed to encrypt cookie with exception:\n {err}'
-                '\n Payload was {payload}')
+                f"Failed to encrypt cookie with exception:\n {err}"
+                "\n Payload was {payload}"
+            )
             raise err
 
     def decrypt_cookie(self, time_stamps: bool = False) -> (dict):
@@ -70,11 +69,10 @@ class Auth:
         """
         try:
             payload = jwt.decode(
-                self.cookie,
-                self.cfg.encryption_key,
-                algorithms=self.cfg.algorithm)
+                self.cookie, self.cfg.encryption_key, algorithms=self.cfg.algorithm
+            )
             if not time_stamps:
-                payload = payload.get('sub', None)
+                payload = payload.get("sub", None)
             return payload
 
         except jwt.ExpiredSignatureError as err:
@@ -103,7 +101,8 @@ class Auth:
             return sub_dict.get(key, None)
         except KeyError:
             self.logger.warning(
-                f'Unable to find key "{key}" in cookie. Got {sub_dict.keys()}')
+                f'Unable to find key "{key}" in cookie. Got {sub_dict.keys()}'
+            )
             return None
 
     def remove(self, key):
@@ -114,15 +113,15 @@ class Auth:
         if not sub_dict.pop(key, None):
             self.logger.warning(
                 f'Called Auth.remove() for field "{key}" but no '
-                'such field existed in the ["sub"] dict')
+                'such field existed in the ["sub"] dict'
+            )
         self.encrypt_cookie(sub_dict)
 
     def get_auth_uri(self):
         """
         Get the authentication url, also sets state against .cookie["sub"]["state"]
         """
-        uri, state = self.client.create_authorization_url(
-            self.cfg.authorize_url)
+        uri, state = self.client.create_authorization_url(self.cfg.authorize_url)
         self.set("state", state)
         return uri
 
@@ -172,8 +171,8 @@ class Auth:
         self.remove("state")
 
         return self.client.fetch_token(
-            self.cfg.access_token_url,
-            authorization_response=self.request.url)
+            self.cfg.access_token_url, authorization_response=self.request.url
+        )
 
     def logout(self):
         """
@@ -183,12 +182,11 @@ class Auth:
         the cookie.
         """
 
-        r = requests.get(
-            self.cfg.logout_url, headers={
-                "client_id": self.cfg.client_id})
+        r = requests.get(self.cfg.logout_url, headers={"client_id": self.cfg.client_id})
         if r.status_code != 200:
             self.logger.warning(
-                f'Logout failed at {self.cfg.logout_url} with status code {r.status_code}')
+                f"Logout failed at {self.cfg.logout_url} with status code {r.status_code}"
+            )
         else:
             self.remove("access_token")
 
@@ -204,16 +202,16 @@ class Auth:
         # Treat no token as does not have role, we don't want to be directing
         # public users through a login.
         decoded_cookie = self.decrypt_cookie()
-        if 'access_token' not in decoded_cookie:
+        if "access_token" not in decoded_cookie:
             return False
 
         # Use token to get user information
-        headers = {'Authorization': f'Bearer {decoded_cookie["access_token"]}'}
+        headers = {"Authorization": f'Bearer {decoded_cookie["access_token"]}'}
         r = requests.post(self.cfg.userinfo_url, headers=headers)
         if not r.ok:
             # TODO - handle this properly
-            raise NotImplementedError('Logout url not working')
-        self.logger.debug(f'Logout got status code {r.status_code}')
+            raise NotImplementedError("Logout url not working")
+        self.logger.debug(f"Logout got status code {r.status_code}")
 
         user_info = r.json()
 
