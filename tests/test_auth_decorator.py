@@ -2,8 +2,6 @@ from sanic import Sanic
 import pytest
 import random
 
-from app.utils import auth, AuthManager
-
 
 class TestDecorator:
     @pytest.mark.asyncio
