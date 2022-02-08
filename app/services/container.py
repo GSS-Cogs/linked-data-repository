@@ -74,8 +74,7 @@ class Injector:
         if not isinstance(service, interface):
                 raise ProtocolError(msg.format(service, interface))
 
-        # If it _needs_factory() it'll be re-instanitated
-        # upon each injection (db connections etc)
+        # If it _needs_factory() it'll be re-instanitated upon each injection
         if service._needs_factory():
             di.factories[interface] = lambda x: service(**config_dict)
         else:

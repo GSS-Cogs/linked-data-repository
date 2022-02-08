@@ -8,7 +8,7 @@ When you `create_app`, the implementation you wish to be injected will be specif
 * None (don't specify). This will tell the app to take the str choice as defined in configuration.ini.
 * You can also pass a `configparser.ConfigParser` instance directly to the `create_app` constructor should you need to (this is for testing).
 
-The principle benefit is to retain flexibility to work with an MVP "good enough for now" or develoment only services, easily swapping to production ready (or generally better) services as and when we need/want to.
+The principle benefit is to retain flexibility to work with an MVP "good enough for now" or development only services, easily swapping to production ready (or generally better) services as and when we need/want to.
 
 
 ### Adding a new service
@@ -17,9 +17,10 @@ Service interfaces are secured using the python `Protocol` class, you can add ne
 
 * Create relevant interface in `app/interfaces`.
 * Create implementation(s) inside the `services` module - this _should_ always include a `Nop` (non operational) handler - see `app/services/store/nop.py` for an example.
-* Inject an alias to the appropriate interface for each new handler, this enables runtime type checking, the decorator pattern will look something like `@inject(alias=interfaces.MyNewInterface)`.
+* All implementations **require** a `_needs_factory() -> bool` @staticmethod as per the provided examples.
+* Inject an alias to the appropriate interface for each new handler, this enables runtime type checking, the decorator pattern will look something like `@inject(alias=interfaces.MyNewInterface)`, again just copy the examples.
 * Create an entry for your new service in the configuration.
-* Define how your handler(s) use this configuration in `app/services/container`.
+* If extra configuration is needed, specify it in `app/services/container` and the relevant configuration dict.
 * To use - decorate any handlers where your directly injected services are used with the `@inject` decorator - and pass the services as a parameter to the function (see example below). 
 
 
