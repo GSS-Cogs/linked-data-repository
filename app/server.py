@@ -20,8 +20,7 @@ def create_app(
     ),
 ) -> (Sanic):
     """
-    Function for configuring the app and dependencies prior to calling the
-    principle app constructor.
+    Principle constructor for the Sanic application 
     """
 
     config_parsed: ConfigParser = (
@@ -35,7 +34,7 @@ def create_app(
     # Bootstrap the app
     Sanic.test_mode = sanic_test_mode
     app = Sanic(name=name)
-    app.ctx.config = config
+    app.ctx.config = config_parsed
 
     @app.route("/")
     @inject
