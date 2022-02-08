@@ -9,5 +9,6 @@ class NopStore:
     A "Not Operational" store. This store provides no default functionality.
     """
 
-    def setup(self):
-        pass
+    @staticmethod
+    def _needs_factory() -> bool:
+        return False

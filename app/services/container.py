@@ -25,37 +25,42 @@ class ProtocolError(Exception):
         self.msg = msg
 
 
-class _Specifier:
+class Injector:
     """
-    di (direct injection containwer) wrapper: allows service instantiation
-    from a str name (such as when acquired from the config) and as either a
-    singleton or factory.
+    di (direct injection container) wrapper: allows:
+    
+    * service instantiation from a str name
+    * instantiation as singleton or factory
+    * runtime validation of required protocols
     """
 
     def __init__(self, config: ConfigParser, implementations: dict):
         self.config = config
         self.implementations = implementations
 
-    def add_service(
+    def configure_service(
         self,
         interface: Type,
         service_label: str,
-        factory=False,
-        **kwargs,
+        config_dict,
     ):
         """
-        di (direct injection container) wrapper: allows service instantiation
-        from a str name (such as when acquired from the config) and as either a
-        singleton or factory.
+        Configure a single service within the container, making it accesible 
+        under a keyword equal to the required interface, i.e:
+        `di[interfaces.Store] = <STORE WE'RE USING>`
+        
+        Configuration in the form of a keyword dictionary is passed in and
+        will be avabilable to the chosen implementation at runtime.
         """
 
-        declaration = self.implementations[service_label]
+        # decaration is the implentation that's been specified for injection
+        declaration: Union[str, Type] = self.implementations[service_label]
 
-        # Set default, where None is declared
+        # Where declaration is None, we're going with the default from the config
         if not declaration:
             declaration = self.config[service_label.upper()]["default_implementation"]
 
-        # If str not class, get the class from the inventory
+        # If declaration is str not class, get the class from the inventory
         try:
             if isinstance(declaration, str):
                 service = INVENTORY[service_label][declaration]
@@ -64,37 +69,30 @@ class _Specifier:
         except KeyError:
             raise UnknownImplementationError(service_label, declaration)
 
+        # Confirm that whatevers been specified has the correct protocols 
         msg = "{} does not implemented protocols of {}"
         if not isinstance(service, interface):
                 raise ProtocolError(msg.format(service, interface))
 
-        if factory:
-            di.factories[interface] = lambda x: service(**kwargs)
+        # If it _needs_factory() it'll be re-instanitated
+        # upon each injection (db connections etc)
+        if service._needs_factory():
+            di.factories[interface] = lambda x: service(**config_dict)
         else:
-            di[interface] = service(**kwargs)
+            di[interface] = service(**config_dict)
         
 def configure_services(config: ConfigParser, implementations: dict):
     """
-    Use configuration to bootstrap service implementations.
-
-    --------
-    Example:
-    --------
-
-    # Set some kwargs for a service
-    di["var1"] = config["FOO"]["bar"]
-    di["var2"] = config["BAR"]["foo"]
-
-    # construct implementations with whatever config it needs
-    thingy_kwargs = {"var1": di["var1"], "var2": di["var2"]}
-    add_service(InterfaceOfThingy, thingy_label, factory=True/False, **thingy_kwargs)
+    Configure all services and the configuration to pass to each service.
     """
 
     di.clear_cache()
-    s = _Specifier(config, implementations)
+    inj = Injector(config, implementations)
 
-    # Store Services
-    s.add_service(interfaces.Store, "store")
+    # Configure stores
+    stores_config = {}
+    inj.configure_service(interfaces.Store, "store", stores_config)
 
-    # Messenger Services
-    s.add_service(interfaces.Messenger, "messenger")
+    # Configure messengers
+    messengers_config = {}
+    inj.configure_service(interfaces.Messenger, "messenger", messengers_config)

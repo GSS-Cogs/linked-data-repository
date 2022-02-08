@@ -9,5 +9,6 @@ class NopMessenger:
     A "Not Operational" messenger. This messenger provides no default functionality.
     """
 
-    def setup(self):
-        pass
+    @staticmethod
+    def _needs_factory() -> bool:
+        return False

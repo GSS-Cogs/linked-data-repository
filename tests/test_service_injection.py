@@ -1,14 +1,16 @@
 import copy
 from configparser import ConfigParser
 from itertools import permutations
+from sys import implementation
 from types import MethodType
 
 from kink import inject
 import pytest
 
 from app.server import create_app
-from app.services import NopStore, NopMessenger, interfaces
+from app.services import NopStore, interfaces
 from app.services.inventory import INVENTORY
+from app.services.container import Injector
 from app.services.container import ProtocolError, UnknownImplementationError
 
 
@@ -24,7 +26,7 @@ def test_documentation_example():
     Sanity check that the documented test example works
     """
 
-    test_store = NopMessenger
+    test_store = NopStore
     test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
 
     @inject
@@ -32,6 +34,103 @@ def test_documentation_example():
         return store.get_record()
 
     assert fake_endpoint() == {"mock": "record"}
+
+
+def test_dependencies_can_be_configured():
+    """
+    Check that we can pass configuration
+    through the dependency injection framework.
+    """
+
+    @inject(alias=interfaces.Store)
+    class TestStore:
+        """
+        A test store that holds on to whatever kwargs
+        get passed to it
+        """
+
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+
+        @staticmethod
+        def _needs_factory() -> bool:
+            return False
+
+    # Instanitate injector with implementations specified
+    inj: Injector = Injector(nop_config, {'store': TestStore})
+
+    # Set configuration
+    inj.configure_service(interfaces.Store, "store", {"kwargy": "foo"})
+
+    @inject
+    def get_me_an_injected_store(store: interfaces.Store) -> interfaces.Store:
+        return store
+
+    # Our TestStore implementation has access to said configuration
+    instantiated_store = get_me_an_injected_store()
+    assert instantiated_store.kwargs['kwargy'] == 'foo'
+
+
+def test_not_a_factory():
+    """
+    Confirm that where a factory is not specified, the
+    service in question is only instantiated once even when
+    an @inject decorated function is called multiple times.
+    """
+
+    @inject(alias=interfaces.Store)
+    class NotAFactoryStore:
+        """
+        A test store thats not using a factory pattern
+        """
+
+        @staticmethod
+        def _needs_factory() -> bool:
+            return False
+
+    # Instanitate injector
+    inj: Injector = Injector(nop_config, {'store': NotAFactoryStore})
+    inj.configure_service(interfaces.Store, "store", {})
+
+    @inject
+    def get_me_an_injected_store(store: interfaces.Store) -> interfaces.Store:
+        return store
+
+    # Instantiating twice gets us exaactly the same object back
+    instantiated_store_1 = get_me_an_injected_store()
+    instantiated_store_2 = get_me_an_injected_store()
+    assert instantiated_store_1 == instantiated_store_2
+
+
+def test_is_a_factory():
+    """
+    Confirm that services where a factory is specified, the
+    service in question is a new object each time an @inject
+    decorated function is called.
+    """
+
+    @inject(alias=interfaces.Store)
+    class IsAFactoryStore:
+        """
+        A test store that is using a factory pattern
+        """
+
+        @staticmethod
+        def _needs_factory() -> bool:
+            return True
+
+    # Instanitate injector
+    inj: Injector = Injector(nop_config, {'store': IsAFactoryStore})
+    inj.configure_service(interfaces.Store, "store", {})
+
+    @inject
+    def get_me_an_injected_store(store: interfaces.Store) -> interfaces.Store:
+        return store
+
+    # Instantiating twice gets us different objects back
+    instantiated_store_1 = get_me_an_injected_store()
+    instantiated_store_2 = get_me_an_injected_store()
+    assert instantiated_store_1 != instantiated_store_2
 
 
 def test_configurable_implementations():

@@ -6,29 +6,8 @@ from typing import Union
 from kink import inject
 from sanic import Sanic, json
 
-from app.services import interfaces, configure_services, GetStore, GetMessenger
+from app.services import interfaces, configure_services
 from app.utils import get_app_config
-
-
-def _boostrap_app(
-    config: ConfigParser,
-    name: str,
-    sanic_test_mode: bool = False,
-) -> (Sanic):
-    """
-    Bootstraps Sanic application with directly injected services,
-    you should never need to directly satisfy any of the interfaces.<X>
-    positional arguments.
-
-    :sanic_test_mode:       toggles Sanics default behaviour of caching
-                            instanitated app instances.
-    """
-
-    Sanic.test_mode = sanic_test_mode
-    app = Sanic(name=name)
-    app.ctx.config = config
-
-    return app
 
 
 def create_app(
@@ -54,11 +33,13 @@ def create_app(
     configure_services(config_parsed, implementations_dict)
 
     # Bootstrap the app
-    app = _boostrap_app(config_parsed, name, sanic_test_mode=sanic_test_mode)
+    Sanic.test_mode = sanic_test_mode
+    app = Sanic(name=name)
+    app.ctx.config = config
 
     @app.route("/")
     @inject
-    async def home(request, store: interfaces.Messenger):
+    async def home(request, store: interfaces.Store):
         return json({"store is": str(type(store))})
 
     return app
