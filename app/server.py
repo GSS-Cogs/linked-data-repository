@@ -11,9 +11,9 @@ async def home(request):
 async def home(request):
     return text("About Test")
 
-@app.route("/helloworld")
+@app.route("/helloworld3")
 async def home(request):
-    return text("Hello World")
+    return text("Hello World3")
 
 @app.route("/info")
 async def home(request):
