@@ -7,9 +7,9 @@ app = Sanic(name="api")
 async def home(request):
     return text("Hello World Foo")
 
-@app.route("/about")
+@app.route("/finance")
 async def home(request):
-    return text("About Test")
+    return text("About finance")
 
 @app.route("/vacation")
 async def home(request):
