@@ -17,7 +17,7 @@ async def home(request):
 
 @app.route("/info")
 async def home(request):
-    return text("Info Test Last")
+    return text("Info Test Last") 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000, debug=True)
