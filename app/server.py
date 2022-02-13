@@ -5,19 +5,8 @@ app = Sanic(name="api")
 
 @app.route("/")
 async def home(request):
-    return text("Hello World Foo")
+    return text("Hello World Sunday")
 
-@app.route("/finance")
-async def home(request):
-    return text("About finance")
-
-@app.route("/vacation")
-async def home(request):
-    return text("vacation")
-
-@app.route("/info")
-async def home(request):
-    return text("Info Test Last") 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000, debug=True)
