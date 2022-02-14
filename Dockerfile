@@ -1,7 +1,7 @@
 FROM python:3.9
 
 # Dependencies
-COPY poetry.lock pyproject.toml ./
+COPY poetry.lock pyproject.toml .tool-versions ./
 RUN pip install poetry
 RUN poetry install
 
