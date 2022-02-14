@@ -20,10 +20,10 @@ class AuthManager:
         self.request = request
 
         self.client = OAuth2Session(
-            self.cfg.client_id,
-            self.cfg.client_secret,
+            self.cfg.get("client_id", None),
+            self.cfg.get("client_secret", None),
             scope="openid",
-            redirect_uri=self.cfg.redirect_uri,
+            redirect_uri=self.cfg.get("redirect_uri", None),
         )
 
         self.cookie = request.cookies.get("user", None)
@@ -38,15 +38,18 @@ class AuthManager:
 
         try:
             payload = {
-                "exp": datetime.datetime.utcnow()
-                + datetime.timedelta(days=0, hours=0, minutes=self.cfg.expiry_minutes),
+                "exp": datetime.datetime.utcnow() +
+                datetime.timedelta(
+                    days=0,
+                    hours=0,
+                    minutes=self.cfg.expiry_minutes),
                 "iat": datetime.datetime.utcnow(),
                 "sub": sub_dict,
             }
             self.cookie = jwt.encode(
                 payload,
-                self.cfg.encryption_key,
-                algorithm=self.cfg.algorithm,
+                self.cfg.get("encryption_key", Noneß),
+                algorithm=self.cfg.get("algorithm", None),
             )
         except Exception as err:
             self.logger.error(
@@ -67,7 +70,7 @@ class AuthManager:
         """
         try:
             payload = jwt.decode(
-                self.cookie, self.cfg.encryption_key, algorithms=self.cfg.algorithm
+                self.cookie, self.cfg.get("encryption_key", None), algorithms=self.cfg.algorithm
             )
             if not time_stamps:
                 payload = payload.get("sub", None)
@@ -119,7 +122,8 @@ class AuthManager:
         """
         Get the authentication url, also sets state against .cookie["sub"]["state"]
         """
-        uri, state = self.client.create_authorization_url(self.cfg.authorize_url)
+        uri, state = self.client.create_authorization_url(
+            self.cfg.authorize_url)
         self.set("state", state)
         return uri
 
@@ -180,7 +184,9 @@ class AuthManager:
         the cookie.
         """
 
-        r = requests.get(self.cfg.logout_url, headers={"client_id": self.cfg.client_id})
+        r = requests.get(
+            self.cfg.logout_url, headers={
+                "client_id": self.cfg.client_id})
         if r.status_code != 200:
             self.logger.warning(
                 f"Logout failed at {self.cfg.logout_url} with status code {r.status_code}"
