@@ -42,13 +42,13 @@ class AuthManager:
                 datetime.timedelta(
                     days=0,
                     hours=0,
-                    minutes=self.cfg.expiry_minutes),
+                    minutes=self.cfg.get("expiry_minutes", None)),
                 "iat": datetime.datetime.utcnow(),
                 "sub": sub_dict,
             }
             self.cookie = jwt.encode(
                 payload,
-                self.cfg.get("encryption_key", Noneß),
+                self.cfg.get("encryption_key", None),
                 algorithm=self.cfg.get("algorithm", None),
             )
         except Exception as err:
