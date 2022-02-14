@@ -27,54 +27,53 @@ class TestDecorator:
         roles, has auth if user has ONE or more of them.
         """
 
-        func = mock.Mock()
-        decorated_func = auth(func(requires_one_of=['admin']))
+        decorated_func = auth(requires_one_of=['blah'])
         request, _ = app.test_client.post('/')
         response = decorated_func(request)
         assert(response, '')
 
 
-    def test_decorator_requires_all(self):
+    def test_decorator_requires_all(self, app):
         """
         When you decorated an endpoing with one or more
         roles, has auth if user has ALL of them.
         """
-        func = mock.Mock()
-        decorated_func = auth(func(requires_all=True))
+
+        decorated_func = auth(requires_all=True)
         request, _ = app.test_client.post('/')
         response = decorated_func(request)
         assert (response, '')
 
-    def test_failed_auth_is_redirected(self):
+    def test_failed_auth_is_redirected(self, app):
         """
         Test that a faield authorization is redirected to the
         keyword specified uri.
         """
-        func = mock.Mock()
-        decorated_func = auth(func(requires_one_of=['blah']))
+
+        decorated_func = auth(requires_one_of=['blah'])
         request, _ = app.test_client.post('/')
         response = decorated_func(request)
         assert (response, '')
 
-    def test_variable_response_endpoint_has_auth(self):
+    def test_variable_response_endpoint_has_auth(self, app):
         """
         Endpoint gives a response but that response varies based
         on auth - this is the has auth scenario.
         """
-        func = mock.Mock()
-        decorated_func = auth(func(requires_one_of=['admin']))
+
+        decorated_func = auth(requires_one_of=['admin'])
         request, _ = app.test_client.post('/')
         response = decorated_func(request)
         # has auth response object?
         assert (response, '')
 
-    def test_variable_response_endpoint_has_no_auth(self):
+    def test_variable_response_endpoint_has_no_auth(self, app):
         """
         Endpoint gives a response but that response varies based
         on auth - this is the has no auth scenario.
         """
-        func = mock.Mock()
-        decorated_func = auth(func(requires_one_of=['blah']))
+
+        decorated_func = auth(requires_one_of=['blah'])
         request, _ = app.test_client.post('/')
         response = decorated_func(request)
         #  no auth resposne object?
