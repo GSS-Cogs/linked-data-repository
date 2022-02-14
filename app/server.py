@@ -5,7 +5,7 @@ app = Sanic(name="api")
 
 @app.route("/")
 async def home(request):
-    return text("Hello World Monday")
+    return text("Hello World Valentines Day")
 
 
 if __name__ == "__main__":
