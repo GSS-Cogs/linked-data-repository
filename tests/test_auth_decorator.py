@@ -1,17 +1,63 @@
 import os
 from unittest import mock
 from sanic import Sanic
+from sanic_testing import TestManager
+from sanic.response import json
 import pytest
 import random
+import asyncio
+import logging
+import requests
+# from .server import app
+from app.utils.auth import decorator
 from app.utils.auth.decorator import auth
+from app.utils.auth.manager import AuthManager
 
 
 class TestDecorator:
-    @pytest.fixture
 
+    @pytest.yield_fixture
     def app(self):
         app = Sanic(name=str("_" + str(random.randint(0, 10000))))
+        app.config['KEEP_ALIVE_TIMEOUT'] = 60
+
+        @app.get("/test_one_of")
+        @auth(requires_one_of=['admin'])
+        async def test_one_of(request):
+            return json({'ok': True})
+
+        @app.get("/test_requires_all")
+        @auth(requires_all=['admin'])
+        async def test_requires_all(request):
+            return json({'ok': True})
+
+        @app.get("/failed_redirects")
+        @auth(requires_all=['admin'], redirect_to="/not_allowed")
+        async def test_request_failed(request):
+            return json({'ok': True})
+
+        @app.get("/not_allowed")
+        async def test_not_allowed(request):
+            return json({'ok': True})
+
+        @app.get("/auth_might_be_allowd")
+        @auth()
+        async def test_might_be_allowed(auth: AuthManager, request):
+            if auth._has_role("admin"):
+                return text(
+                    'I\'m the version of the "maybe-auth" endpoint for people with the "admin" role!'
+                )
+            else:
+                return text(
+                    'I\'m the version of the "maybe-auth" endpoint for people without the "admin" role!'
+                )
+
         yield app
+
+    @pytest.fixture
+    def test_cli(loop, app, test_client):
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(test_client(app))
 
     @pytest.fixture(autouse=True)
     def mock_settings_env_vars(self):
@@ -27,11 +73,8 @@ class TestDecorator:
         roles, has auth if user has ONE or more of them.
         """
 
-        decorated_func = auth(requires_one_of=['blah'])
-        request, _ = app.test_client.post('/')
-        response = decorated_func(request)
-        assert(response, '')
-
+        request, response = app.test_client.get("/test_one_of")
+        assert response.status_code == 200
 
     def test_decorator_requires_all(self, app):
         """
@@ -39,10 +82,8 @@ class TestDecorator:
         roles, has auth if user has ALL of them.
         """
 
-        decorated_func = auth(requires_all=True)
-        request, _ = app.test_client.post('/')
-        response = decorated_func(request)
-        assert (response, '')
+        request, response = app.test_client.post('/test_requires_all"')
+        assert response.status_code == 200
 
     def test_failed_auth_is_redirected(self, app):
         """
@@ -51,9 +92,8 @@ class TestDecorator:
         """
 
         decorated_func = auth(requires_one_of=['blah'])
-        request, _ = app.test_client.post('/')
-        response = decorated_func(request)
-        assert (response, '')
+        request, response = app.test_client.post('/failed_redirects')
+        assert response.status_code == 200
 
     def test_variable_response_endpoint_has_auth(self, app):
         """
@@ -61,20 +101,13 @@ class TestDecorator:
         on auth - this is the has auth scenario.
         """
 
-        decorated_func = auth(requires_one_of=['admin'])
-        request, _ = app.test_client.post('/')
-        response = decorated_func(request)
-        # has auth response object?
-        assert (response, '')
+        request, response = app.test_client.post('/auth_might_be_allow')
+        assert response.status_code == 200
 
     def test_variable_response_endpoint_has_no_auth(self, app):
         """
         Endpoint gives a response but that response varies based
         on auth - this is the has no auth scenario.
         """
-
-        decorated_func = auth(requires_one_of=['blah'])
-        request, _ = app.test_client.post('/')
-        response = decorated_func(request)
-        #  no auth resposne object?
-        assert (response, '')
+        request, response = app.test_client.post('/failed_redirects')
+        assert response.status_code == 200
