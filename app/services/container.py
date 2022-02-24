@@ -34,9 +34,10 @@ class Injector:
     * runtime validation of required protocols
     """
 
-    def __init__(self, config: ConfigParser, implementations: dict):
+    def __init__(self, config: ConfigParser, implementations: dict = {}):
         self.config = config
         self.implementations = implementations
+        di.clear_cache()
 
     def configure_service(
         self,
@@ -54,7 +55,7 @@ class Injector:
         """
 
         # decaration is the implentation that's been specified for injection
-        declaration: Union[str, Type] = self.implementations[service_label]
+        declaration: Union[str, Type] = self.implementations.get(service_label, None)
 
         # Where declaration is None, we're going with the default from the config
         if not declaration:
@@ -74,8 +75,8 @@ class Injector:
         if not isinstance(service, interface):
                 raise ProtocolError(msg.format(service, interface))
 
-        # If it _needs_factory() it'll be re-instanitated upon each injection
-        if service._needs_factory():
+        # Propogate configuration to constructors
+        if service in di._factories:
             di.factories[interface] = lambda x: service(**config_dict)
         else:
             di[interface] = service(**config_dict)
@@ -89,9 +90,9 @@ def configure_services(config: ConfigParser, implementations: dict):
     inj = Injector(config, implementations)
 
     # Configure stores
-    stores_config = {}
-    inj.configure_service(interfaces.Store, "store", stores_config)
+    configuration_store = {}
+    inj.configure_service(interfaces.Store, "store", configuration_store)
 
     # Configure messengers
-    messengers_config = {}
-    inj.configure_service(interfaces.Messenger, "messenger", messengers_config)
+    configuration_messenger = {}
+    inj.configure_service(interfaces.Messenger, "messenger", configuration_messenger)

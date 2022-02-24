@@ -1,4 +1,4 @@
-from kink import inject
+from kink import inject, di
 
 from .. import interfaces
 
@@ -8,7 +8,4 @@ class NopStore:
     """
     A "Not Operational" store. This store provides no default functionality.
     """
-
-    @staticmethod
-    def _needs_factory() -> bool:
-        return False
+    ...
