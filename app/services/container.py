@@ -60,7 +60,7 @@ class Injector:
         in global state.
 
         This is sometimes necessary for testing as it's a scenario where we'd
-        specifiy multiple "use this" implementations for a given interface
+        specify multiple "use this" implementations for a given interface
         (something that cant happen in production), hence we need a test mode
         reset.
 
