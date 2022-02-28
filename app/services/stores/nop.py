@@ -8,4 +8,5 @@ class NopStore:
     """
     A "Not Operational" store. This store provides no default functionality.
     """
+
     ...

@@ -28,6 +28,8 @@ Service interfaces are secured using the python `Protocol` class, you can add ne
 
 
 ```python
+from unittest.mock import Mock
+
 from kink import inject
 
 from app.server import create_app
@@ -36,16 +38,20 @@ def test_for_getting_a_record():
     """
     Hyperthetical test where our app needs to get a record from the "Store"
     """
-    test_store = NopStore
-    test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
+    test_store = Mock
+    test_store.get_record = lambda _: {"mock": "record"}
 
     @inject
     def fake_endpoint(store: interfaces.Store):
         return store.get_record()
 
+    inj: Injector = Injector(nop_config, {"store": test_store}, enforce_protocols=False)
+    inj.configure_service(interfaces.Store, "store", {})
+
     assert fake_endpoint() == {"mock": "record"}
 ```
 
+_Note: the flag `enforce_protocols=False` is necessary when testing and when using a `Mock` as otherwise a type error would be thrown.
 
 ### Other Test Considerations
 

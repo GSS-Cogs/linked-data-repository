@@ -20,7 +20,7 @@ def create_app(
     ),
 ) -> (Sanic):
     """
-    Principle constructor for the Sanic application 
+    Principle constructor for the Sanic application
     """
 
     config_parsed: ConfigParser = (

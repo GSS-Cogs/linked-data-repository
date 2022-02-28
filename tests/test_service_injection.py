@@ -3,8 +3,9 @@ from configparser import ConfigParser
 from itertools import permutations
 from sys import implementation
 from types import MethodType
+from unittest.mock import Mock
 
-from kink import inject, di
+from kink import inject, di, Container
 import pytest
 
 from app.server import create_app
@@ -26,14 +27,14 @@ def test_documentation_example():
     Sanity check that the documented test example works
     """
 
-    test_store = NopStore
-    test_store.get_record = MethodType(lambda x: {"mock": "record"}, test_store)
+    test_store = Mock
+    test_store.get_record = lambda _: {"mock": "record"}
 
     @inject
     def fake_endpoint(store: interfaces.Store):
         return store.get_record()
 
-    inj: Injector = Injector(nop_config)
+    inj: Injector = Injector(nop_config, {"store": test_store}, enforce_protocols=False)
     inj.configure_service(interfaces.Store, "store", {})
 
     assert fake_endpoint() == {"mock": "record"}
@@ -56,7 +57,7 @@ def test_dependencies_can_be_configured():
             self.kwargs = kwargs
 
     # Instanitate injector with implementations specified
-    inj: Injector = Injector(nop_config, {'store': TestStore})
+    inj: Injector = Injector(nop_config, {"store": TestStore})
 
     # Set configuration
     inj.configure_service(interfaces.Store, "store", {"kwargy": "foo"})
@@ -67,7 +68,7 @@ def test_dependencies_can_be_configured():
 
     # Our TestStore implementation has access to said configuration
     instantiated_store = get_me_an_injected_store()
-    assert instantiated_store.kwargs['kwargy'] == 'foo'
+    assert instantiated_store.kwargs["kwargy"] == "foo"
 
 
 def test_not_a_factory():
@@ -82,10 +83,11 @@ def test_not_a_factory():
         """
         A test store thats not using a factory pattern
         """
+
         pass
 
     # Instanitate injector
-    inj: Injector = Injector(nop_config, {'store': NotAFactoryStore})
+    inj: Injector = Injector(nop_config, {"store": NotAFactoryStore})
     inj.configure_service(interfaces.Store, "store", {})
 
     @inject
@@ -110,10 +112,11 @@ def test_is_a_factory():
         """
         A test store that is using a factory pattern
         """
+
         pass
 
     # Instanitate injector
-    inj: Injector = Injector(nop_config, {'store': IsAFactoryStore})
+    inj: Injector = Injector(nop_config, {"store": IsAFactoryStore})
     inj.configure_service(interfaces.Store, "store", {})
 
     @inject
@@ -132,8 +135,11 @@ def test_configurable_implementations():
     """
     create_app(sanic_test_mode=True, config=nop_config)
 
+
 # TODO - see NOTE in method body.
-@pytest.mark.skip(reason="Cannot fail until we've defined our first protocol with methods")
+@pytest.mark.skip(
+    reason="Cannot fail until we've defined our first protocol with methods"
+)
 def test_incorrect_interface_is_raised():
     """
     The expected exception is raised if an implementation does not
@@ -148,6 +154,7 @@ def test_incorrect_interface_is_raised():
         # to it (as currently per messenger) and remove skip decorator.
         create_app(messenger=WrongUn, sanic_test_mode=True, config=nop_config)
 
+
 def test_bad_config_raises():
     """
     Specifying unknown implementations via configuration raises an appropriate
@@ -159,6 +166,40 @@ def test_bad_config_raises():
 
     with pytest.raises(UnknownImplementationError):
         create_app(sanic_test_mode=True, config=config)
+
+
+def test_service_injected_into_service():
+    """
+    Confirm that an injectable service can be injected into the
+    constructor of another injectable service.
+    """
+
+    Injector._test_only_reset_container()
+
+    @inject(alias=interfaces.Store)
+    class StoreThatsBeingInjected:
+        ...
+
+    @inject(alias=interfaces.Messenger)
+    class MessengerThatsTakingAnInjection:
+        def __init__(self, store: interfaces.Store):
+            self.store = store
+
+    inj: Injector = Injector(
+        implementations={
+            "store": StoreThatsBeingInjected,
+            "messenger": MessengerThatsTakingAnInjection,
+        },
+    )
+    inj.configure_service(interfaces.Store, "store", {})
+    inj.configure_service(interfaces.Messenger, "messenger", {})
+
+    @inject
+    def get_me_a_messenger(messenger: interfaces.Messenger) -> interfaces.Messenger:
+        return messenger
+
+    messenger: MessengerThatsTakingAnInjection = get_me_a_messenger()
+    assert isinstance(messenger.store, StoreThatsBeingInjected)
 
 
 def test_all_implementation_combinations_valid():
