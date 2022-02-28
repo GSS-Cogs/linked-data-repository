@@ -16,8 +16,6 @@ The principle benefit is to retain flexibility to work with an MVP "good enough 
 Service interfaces are secured using the python `Protocol` class, you can add new ones with the following steps.
 
 * Create relevant interface in `app/interfaces`.
-* Create implementation(s) inside the `services` module - this _should_ always include a `Nop` (non operational) handler - see `app/services/store/nop.py` for an example.
-* All implementations **require** a `_needs_factory() -> bool` @staticmethod as per the provided examples.
 * Inject an alias to the appropriate interface for each new handler, this enables runtime type checking, the decorator pattern will look something like `@inject(alias=interfaces.MyNewInterface)`, again just copy the examples.
 * Create an entry for your new service in the configuration.
 * If extra configuration is needed, specify it in `app/services/container` and the relevant configuration dict.
