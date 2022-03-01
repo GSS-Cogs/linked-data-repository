@@ -22,6 +22,15 @@ nop_config.add_section("MESSENGER")
 nop_config["MESSENGER"]["default_implementation"] = "Nop"
 
 
+@pytest.fixture(autouse=True)
+def reset_container():
+    """
+    The container lives in a global, make sure
+    to reset it between tests.
+    """
+    Injector._test_only_reset_container()
+
+
 def test_documentation_example():
     """
     Sanity check that the documented test example works
@@ -173,8 +182,6 @@ def test_service_injected_into_service():
     Confirm that an injectable service can be injected into the
     constructor of another injectable service.
     """
-
-    Injector._test_only_reset_container()
 
     @inject(alias=interfaces.Store)
     class StoreThatsBeingInjected:

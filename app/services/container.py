@@ -1,5 +1,5 @@
 from configparser import ConfigParser
-from typing import Type, TypeVar, Union
+from typing import Optional, Type, Union
 
 from kink import di, Container
 
@@ -45,7 +45,7 @@ class Injector:
 
     def __init__(
         self,
-        config: Union[ConfigParser, None] = None,
+        config: Optional[ConfigParser] = None,
         implementations: dict = {},
         enforce_protocols=True
     ):
