@@ -6,7 +6,7 @@ A repository to hold and store CSV-Ws, Turtle and other Linked data
 
 * clone this repo
 * `poetry install`
-* `poetry run ./app/server.py`
+* `poetry run ./run.py`
 
 
 ### Upgrading or adding python packages
@@ -20,7 +20,9 @@ A repository to hold and store CSV-Ws, Turtle and other Linked data
 
 Will run on PR's into develop or master, merges with test fails will not be permitted.
 
-To run tests locally use `poetry run pytest ./tests/* -v` (v is for verbose, you'll want that).
+To run tests locally use `poetry run pytest -v`
+
+You can add additional test paths via the `[tool.pytest.ini_options]` section of `pyproject.toml`.
 
 ### Release Process / Images
 
