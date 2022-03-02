@@ -216,8 +216,8 @@ tinydb = "^4.6.1"
 [package.source]
 type = "git"
 url = "https://github.com/GSS-Cogs/linked-data-repository-shared.git"
-reference = "f499e40fbd3b4ac0d57e9b2e92db4b01f672bc17"
-resolved_reference = "f499e40fbd3b4ac0d57e9b2e92db4b01f672bc17"
+reference = "f5d74dad2b7024482e95b93426c0179162094b3c"
+resolved_reference = "f5d74dad2b7024482e95b93426c0179162094b3c"
 
 [[package]]
 name = "libcst"
@@ -513,7 +513,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "1ccfebd27549008d28aa0f858d0909aeaa2280ae32a454ee049147254d155f14"
+content-hash = "bffdfb1e6ba43b286a1ff4a0fe1504111cef7582794ea41a39997f92afea3a75"
 
 [metadata.files]
 aiofiles = [
