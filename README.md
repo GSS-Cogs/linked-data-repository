@@ -29,3 +29,14 @@ A new `gsscogs/linked-data-repository:develop` image will be pushed to dockerhub
 A new `gsscogs/linked-data-repository:master` image will **only** be build on **release** of the master branch code.
 
 The convention is to only merge `develop` -> `master` as the immediate precurrsor of an official release of `master` (so both `develop` and `master` remain representative of what's contained in the public dockerhub images).
+
+(.venv) ➜  linked-data-repository git:(trial/pubsub-client) ✗ gcloud auth application-default login
+
+The environment variable [GOOGLE_APPLICATION_CREDENTIALS] is set to:
+  [$HOME/Documents/python-pubsub/optimum-bonbon-257411-6a70d937b193.json]
+Credentials will still be generated to the default location:
+  [$HOME/.config/gcloud/application_default_credentials.json]
+To use these credentials, unset this environment variable before
+running your application.
+
+Do you want to continue (Y/n)?  

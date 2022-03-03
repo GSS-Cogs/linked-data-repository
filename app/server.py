@@ -7,14 +7,18 @@ from ldrshared.clients import PubSubClient, BaseMessage
 
 app = Sanic(name="api")
 
-SUBSRIPTION_NAME = os.environ.get("SUBSCRIPTION_NAME", None)
-assert SUBSRIPTION_NAME, 'You need to export the name of the subscription via the env var "SUBSCRIPTION_NAME"'
+# GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None)
+# assert GOOGLE_APPLICATION_CREDENTIALS, 'You need to export the name of the subscription via the env var "GOOGLE_APPLICATION_CREDENTIALS"'
+
+
+SUBSCRIPTION_NAME = os.environ.get("SUBSCRIPTION_NAME", None)
+assert SUBSCRIPTION_NAME, 'You need to export the name of the subscription via the env var "SUBSCRIPTION_NAME"'
 
 TOPIC_NAME = os.environ.get("TOPIC_NAME", None)
 assert TOPIC_NAME, 'You need to export the name of the subscription via the env var "TOPIC_NAME"'
 
 client = PubSubClient()
-client.subscribe(SUBSRIPTION_NAME)
+client.subscribe(SUBSCRIPTION_NAME)
 
 @app.route("/")
 async def home(request):
