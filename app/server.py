@@ -1,4 +1,5 @@
 import os
+from socket import gaierror
 from typing import Union
 
 from sanic import Sanic, text, request
@@ -27,11 +28,19 @@ async def home(request):
 async def get(request):
     message: Union[BaseMessage, None] = client.get_next_message()
     if message:
-        client.confirm_received(message)
+        try:
+            client.confirm_received(message)
+        except Exception as err:
+            raise Exception(f'''
+            Failed to confirm message:
+
+            Message was type {type(message)}
+            Message is: {message}
+            ''') from err
         return text(f'got message: {message.get()}')
     else:
         return text('no message in queue')
-
+gaierror
 
 @app.route("/put-message")
 async def put(request):
