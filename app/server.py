@@ -40,7 +40,7 @@ async def get(request):
         return text(f'got message: {message.get()}')
     else:
         return text('no message in queue')
-gaierror
+
 
 @app.route("/put-message")
 async def put(request):
