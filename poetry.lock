@@ -235,8 +235,8 @@ tinydb = "^4.6.1"
 [package.source]
 type = "git"
 url = "https://github.com/GSS-Cogs/linked-data-repository-shared.git"
-reference = "2b98937a294be3cc6230efa334dd0440de51854d"
-resolved_reference = "2b98937a294be3cc6230efa334dd0440de51854d"
+reference = "7d01036df6371ffa4cacf040ffee108f206aefaf"
+resolved_reference = "7d01036df6371ffa4cacf040ffee108f206aefaf"
 
 [[package]]
 name = "multidict"
@@ -488,7 +488,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "7694ada11ec387a483408faff97c9651837cb6dfd4842edbffce4efcbf027f8c"
+content-hash = "d311aaa134ace293092ec14fd85d36f39caafcf1cc69e14a7ee57825c70cdb50"
 
 [metadata.files]
 aiofiles = [
