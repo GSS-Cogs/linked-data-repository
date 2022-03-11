@@ -8,7 +8,7 @@ authors = ["mikeAdamss <mikelovesbooks@gmail.com>"]
 python = "^3.9"
 sanic = "^21.12.1"
 requests = "^2.27.1"
-ldrshared = { git = "https://github.com/GSS-Cogs/linked-data-repository-shared.git", rev = "3f88d838d6d56fbcb20035738e9e8ff6538334ae" }
+ldrshared = { git = "https://github.com/GSS-Cogs/linked-data-repository-shared.git", rev = "2b98937a294be3cc6230efa334dd0440de51854d" }
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.0"
