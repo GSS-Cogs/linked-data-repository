@@ -22,9 +22,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build dev
+      - name: Build temp-delete-me
         uses: docker/build-push-action@v2
-        id: docker_build_develop
+        id: docker_build_temp_delete_me
         with:
           context: .
           file: ./Dockerfile
@@ -32,4 +32,4 @@ jobs:
           tags: |
             gsscogs/linked-data-repository:temp-delete-me
       - name: Develop Image digest
-        run: echo ${{ steps.docker_build_develop.outputs.digest }}
+        run: echo ${{ steps.temp-docker_build_temp_delete_me-me.outputs.digest }}
